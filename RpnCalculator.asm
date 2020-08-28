@@ -483,6 +483,52 @@ sStaticDataBegin:
 
 sStaticDataEnd:
 
+
+; RPN stack: storage for RPN registers X, Y, Z, and T
+
+sRpnX:
+sRpnX0:
+    .byte 1
+sRpnX1:
+    .byte 1
+sRpnX2:
+    .byte 1
+sRpnX3:
+    .byte 1
+
+sRpnY:
+sRpnY0:
+    .byte 1
+sRpnY1:
+    .byte 1
+sRpnY2:
+    .byte 1
+sRpnY3:
+    .byte 1
+
+sRpnZ:
+sRpnZ0:
+    .byte 1
+sRpnZ1:
+    .byte 1
+sRpnZ2:
+    .byte 1
+sRpnZ3:
+    .byte 1
+
+sRpnT:
+sRpnT0:
+    .byte 1
+sRpnT1:
+    .byte 1
+sRpnT2:
+    .byte 1
+sRpnT3:
+    .byte 1
+
+
+; Working storage for conversion to decimal form for display
+
 sAsciiNumberStr:
     .byte 1
 sBcdNumberArray:

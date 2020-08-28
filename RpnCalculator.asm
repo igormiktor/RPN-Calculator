@@ -255,22 +255,22 @@
 .equ kNbrSignBitNbr                 = 1         ; Bit number 1
 
 
-.def rArgByte0                      = r24       ; First byte arg, or low byte of word arg
-.def rArgByte1                      = r25       ; Second byte arg, or high byte of word arg
+.def rArgByte0                      = r22       ; First byte arg, or low byte of word arg
+.def rArgByte1                      = r22       ; Second byte arg, or high byte of word arg
 
-.def rDelayUsL                      = r24       ; Subroutine delayMicroSeconds
-.def rDelayUsH                      = r25       ; Subroutine delayMicroSeconds
-.def rMillisL                       = r24       ; Subroutine delayMilliSeconds
-.def rMillisH                       = r25       ; Subroutine delayMilliSeconds
-.def r10ths                         = r24       ; Subroutine delayTenthsOfSeconds
-.def rDTSOuter                      = r25       ; Subroutine delayTenthsOfSeconds
+.def rDelayUsL                      = r22       ; Subroutine delayMicroSeconds
+.def rDelayUsH                      = r23       ; Subroutine delayMicroSeconds
+.def rMillisL                       = r22       ; Subroutine delayMilliSeconds
+.def rMillisH                       = r23       ; Subroutine delayMilliSeconds
+.def r10ths                         = r22       ; Subroutine delayTenthsOfSeconds
+.def rDTSOuter                      = r23       ; Subroutine delayTenthsOfSeconds
 
-.def rArgByte2                      = r26       ; Third byte of dword (32 bit) argument
-.def rArgByte3                      = r27       ; Fourth byte of dword (32 bit) argument
-.def rDWMSInnerL                    = r26       ; Subroutine delayMilliSeconds
-.def rDWMSInnerH                    = r27       ; Subroutine delayMilliSeconds
-.def rDTSInnerL                     = r26       ; Subroutine delayTenthsOfSeconds
-.def rDTSInnerH                     = r27       ; Subroutine delayTenthsOfSeconds
+.def rArgByte2                      = r24       ; Third byte of dword (32 bit) argument
+.def rArgByte3                      = r25       ; Fourth byte of dword (32 bit) argument
+.def rDWMSInnerL                    = r24       ; Subroutine delayMilliSeconds
+.def rDWMSInnerH                    = r25       ; Subroutine delayMilliSeconds
+.def rDTSInnerL                     = r24       ; Subroutine delayTenthsOfSeconds
+.def rDTSInnerH                     = r25       ; Subroutine delayTenthsOfSeconds
 
 
 

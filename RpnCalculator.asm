@@ -462,6 +462,22 @@
 
 
 
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None (doubles rNbrByte3:rNbrByte0)
+.macro multiplyNbrBy2
+
+    lsl rNbrByte0
+    rol rNbrByte1
+    rol rNbrByte2
+    rol rNbrByte3
+
+.endm
+
+
+
 
 ; **********************************
 ;  D A T A   S E G M E N T
@@ -1449,6 +1465,57 @@ multU16by8:
     inc rProd2          ; Do the carry
 multU16by8_1:
 
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+multiplyBy10:
+
+; Multiple a DWORD number by 10 using doubling and repeated additions
+
+; Registers rNbrByte3:rNbrByte0 passed in as arguments and returned (changed)
+
+;   rNbrByte3:rNbrByte0     = input & output
+;   rTmp1                   = used
+
+; Sequence is:
+;   - double the number (x2)
+;   - store double number on the stack
+;   - double the number a second time (x4)
+;   - double the number a third time (x8)
+;   - add the doubled number from the stack (net x10)
+
+    multiplyNbrBy2
+    brvs multiplyBy10_Overflow
+
+    push rNbrByte3
+    push rNbrByte2
+    push rNbrByte1
+    push rNbrByte0
+
+    multiplyNbrBy2
+    brvs multiplyBy10_Overflow
+    multiplyNbrBy2
+    brvs multiplyBy10_Overflow
+
+    pop rTmp1
+    add rNbrByte0, rTmp1
+    pop rTmp1
+    adc rNbrByte1, rTmp1
+    pop rTmp1
+    adc rNbrByte2, rTmp1
+    pop rTmp1
+    adc rNbrByte3, rTmp1
+    brvs multiplyBy10_Overflow
+
+    ret
+
+multiplyBy10_Overflow:                          ; TODO think about error handling/propagation
+    call doOverflow
     ret
 
 

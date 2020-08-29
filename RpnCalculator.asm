@@ -239,9 +239,6 @@
 .def rNbrByte2                      = r12       ; Assemble a 16 bit number from keypad entry here
 .def rNbrByte3                      = r13       ; Assemble a 16 bit number from keypad entry here
 
-.def rWorkingNbrL                   = r10       ; Assemble a 16 bit number from keypad entry here (low byte)
-.def rWorkingNbrH                   = r11       ; Assemble a 16 bit number from keypad entry here (high byte)
-
 .def rLoop1                         = r14       ; Loop counter
 
 .def rSREG                          = r15       ; Save/Restore status port

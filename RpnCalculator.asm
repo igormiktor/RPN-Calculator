@@ -227,13 +227,12 @@
 ;  R E G I S T E R  P O L I C Y
 ; ***************************************
 
-.def rScratch0                      = r2        ; Scratch (low) register
-.def rScratch1                      = r3        ; Scratch (low) register
-.def rScratch2                      = r4        ; Scratch (low) register
-.def rScratch3                      = r5        ; Scratch (low) register
+.def rDisplayTmp                    = r5        ; Used as temporary in low-level LCD related routines
 
-.def rBinWordL                      = r6        ; Argument for ASCII conversion
-.def rBinWordH                      = r7        ; Argument for ASCII conversion
+.def rScratch0                      = r6        ; Scratch (low) register
+.def rScratch1                      = r7        ; Scratch (low) register
+.def rScratch2                      = r8        ; Scratch (low) register
+.def rScratch3                      = r9        ; Scratch (low) register
 
 .def rNbrByte0                      = r10       ; Assemble a 16 bit number from keypad entry here
 .def rNbrByte1                      = r11       ; Assemble a 16 bit number from keypad entry here
@@ -1057,15 +1056,15 @@ initStaticData:
     ; Z             = pointer to program memory
     ; X             = pointer to SRAM
     ; rTmp1         = counter
-    ; rScratch1     = transfer register
+    ; rTmp2         = transfer register
 
     ; Set up pointers to read from PROGMEM to SRAM
     ldi rTmp1, kdStaticDataLen
     ldiw Z, dStaticDataBegin << 1
     ldiw X, sStaticDataBegin
 initStaticData_Loop:                               ; Actual transfer loop from PROGMEM to SRAM
-        lpm rScratch1, Z+
-        st X+, rScratch1
+        lpm rTmp2, Z+
+        st X+, rTmp2
         dec rTmp1
         brne initStaticData_Loop
 
@@ -1185,7 +1184,7 @@ sendDataToLcd:
     ; Register rArgByte0 is passed as parameter
 
     ; rArgByte0 = the byte to write to the LCD (modified)
-    ; rScratch1 used as a temporary register
+    ; rDisplayTmp used as a temporary register
     ; (rTmp1 used as a temporary by write4BitsToLcd)
 
 
@@ -1198,10 +1197,10 @@ sendCmdToLcd:
     ; Intentional fall through
 
 send8BitsToLcd:
-    mov rScratch1, rArgByte0                        ; Save the value
+    mov rDisplayTmp, rArgByte0                      ; Save the value
     swap rArgByte0
     rcall write4BitsToLcd                           ; Send the upper nibble
-    mov rArgByte0, rScratch1                        ; Restore the value
+    mov rArgByte0, rDisplayTmp                      ; Restore the value
     rcall write4BitsToLcd                           ; Send the lower nibble
 
     ret
@@ -1737,7 +1736,7 @@ convertDwordToBcdArray:
     ; rArgByte3:rArgByte0   = 32-bit quantity to convert (changed)
     ; Z                     = pointer to first (highest) digit of BCD result
     ;                         (1 digit per byte, 10 bytes total, with leading zeros)
-    ; rScratch2:rScratch1   = scratch registers sometimes used as a 16-bit quantity (changed)
+    ; rScratch3:rScratch0   = scratch registers used as a 32-bit divisor (changed)
 
     pushw Z                             ; Save Z
 
@@ -1852,7 +1851,7 @@ getOneDecimalDigit:
 
     ; rArgByte3:rArgByte0   = 32-bit quantity to be decimated (changed)
     ; Z                     = pointer to store resulting BCD digit  (changed)
-    ; rScratch3:rScratch0   = 32-bit binary decimal value (unchanged)
+    ; rScratch3:rScratch0   = 32-bit binary decimal divisor (unchanged)
     ; rTmp1                 = Used
 
     clr rTmp1                           ; Counts number of multiples subtracted, initialize to 0

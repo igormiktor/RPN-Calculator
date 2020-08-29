@@ -1065,10 +1065,7 @@ doNumericKey:
     rjmp doNumericKey_Continuing
                                                 ; Just started entering a number
     call rollRpnStackUp
-    clr rNbrByte3                               ; Clear the registers we accumulate the number in
-    clr rNbrByte2
-    clr rNbrByte1
-    clr rNbrByte0
+    clearEntryNbr                               ; Clear the registers we accumulate the number in
     cbi rState, kNbrSignBit                     ; Clear the sign indicator bit
     sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
     mov rNbrByte0, rKey

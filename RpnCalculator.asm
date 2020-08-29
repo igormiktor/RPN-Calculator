@@ -1478,6 +1478,108 @@ multU16by8_1:
 ;  S U B R O U T I N E
 ; **********************************
 
+rollRpnStackUp:
+
+; Roll RPN stack up
+
+; sRpnX -> sRpnY -> sRpnZ -> sRpnT -> <discard>
+
+;   X                       = used as source ptr
+;   Z                       = used as destination ptr
+;   rTmp1                   = used
+
+    ; Z -> T
+    ldiw X, sRpnZ
+    ldiw Z, sRpnT
+    ldi rTmp1, 4
+    mov rLoop1, rTmp1
+rollRpnStackUp_Z2T:
+    ld rTmp1, X+
+    st Z+, rTmp1
+    dec rLoop1
+    brne rollRpnStackUp_Z2T
+
+    ; Y -> Z
+    ldiw X, sRpnY
+    ldiw Z, sRpnZ
+    ldi rTmp1, 4
+    mov rLoop1, rTmp1
+rollRpnStackUp_Y2Z:
+    ld rTmp1, X+
+    st Z+, rTmp1
+    dec rLoop1
+    brne rollRpnStackUp_Y2Z
+
+    ; X -> Y
+    ldiw X, sRpnX
+    ldiw Z, sRpnY
+    ldi rTmp1, 4
+    mov rLoop1, rTmp1
+rollRpnStackUp_X2Y:
+    ld rTmp1, X+
+    st Z+, rTmp1
+    dec rLoop1
+    brne rollRpnStackUp_X2Y
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+rollRpnStackDown:
+
+; Roll RPN stack down
+
+; sRpnT -> sRpnZ -> sRpnY -> sRpnX -> <discard>
+
+;   X                       = used as source ptr
+;   Z                       = used as destination ptr
+;   rTmp1                   = used
+
+    ; T -> Z
+    ldiw X, sRpnT
+    ldiw Z, sRpnZ
+    ldi rTmp1, 4
+    mov rLoop1, rTmp1
+rollRpnStackDown_T2Z:
+    ld rTmp1, X+
+    st Z+, rTmp1
+    dec rLoop1
+    brne rollRpnStackDown_T2Z
+
+    ; Z -> Y
+    ldiw X, sRpnZ
+    ldiw Z, sRpnY
+    ldi rTmp1, 4
+    mov rLoop1, rTmp1
+rollRpnStackDown_Z2Y:
+    ld rTmp1, X+
+    st Z+, rTmp1
+    dec rLoop1
+    brne rollRpnStackDown_Z2Y
+
+    ; Y -> X
+    ldiw X, sRpnY
+    ldiw Z, sRpnX
+    ldi rTmp1, 4
+    mov rLoop1, rTmp1
+rollRpnStackDown_Y2X:
+    ld rTmp1, X+
+    st Z+, rTmp1
+    dec rLoop1
+    brne rollRpnStackUp_Y2X
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
 multiplyBy10:
 
 ; Multiple a DWORD number by 10 using doubling and repeated additions

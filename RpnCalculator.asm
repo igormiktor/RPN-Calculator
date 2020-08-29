@@ -1032,8 +1032,8 @@ doNumericKey:
     sbrs rState, kDigitEntryBitNbr
     rjmp doNumericKey_Continuing
                                                 ; Just started entering a number
-    ; TODO Need to roll the stack up!!!
-    clr rNbrByte3                            ; Clear the registers we accumulate the number in
+    call rollRpnStackUp
+    clr rNbrByte3                               ; Clear the registers we accumulate the number in
     clr rNbrByte2
     clr rNbrByte1
     clr rNbrByte0

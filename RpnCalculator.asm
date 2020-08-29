@@ -1003,25 +1003,30 @@ doNumericKey:
     rjmp doNumericKey_Continuing
                                                 ; Just started entering a number
     ; TODO Need to roll the stack up!!!
-    clr rWorkingNbrH                            ; Clear the registers we accumulate the number in
-    clr rWorkingNbrL
+    clr rNbrByte3                            ; Clear the registers we accumulate the number in
+    clr rNbrByte2
+    clr rNbrByte1
+    clr rNbrByte0
     cbi rState, kNbrSignBit                     ; Clear the sign indicator bit
     sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
-    mov rWorkingNbrL, rKey
+    mov rNbrByte0, rKey
     ret
 
 doNumericKey_Continuing:
     ; Multiply the existing number by 10 to incorporate a new digit
-    add rWorkingNbrL, rKey
-    clr rKey                                    ; Doesn't affect carry flag
-    adc rWorkingNbrH, rKey
-
+    call multiplyBy10
     brcs doNumericKey_Overflow
 
+    add rNbrByte0, rKey
+    clr rKey                                    ; Doesn't affect carry flag
+    adc rNbrByte1, rKey
+    adc rNbrByte2, rKey
+    adc rNbrByte3, rKey
+    brcs doNumericKey_Overflow
     ret
 
 doNumericKey_Overflow:
-    call doOverflow:
+    call doOverflow
     ret
 
 
@@ -1035,7 +1040,7 @@ doOverflow:
     ; Prepare the LCD display
     setLcdRowColM 1, 0
     displayMsgOnLcdM sOverflowMsg
-
+    ret
 
 
 

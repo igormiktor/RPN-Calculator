@@ -611,11 +611,15 @@ sRpnT3:
 
 
 ; Working storage for conversion to decimal form for display
-
+sDisplayNbrStr:
+sLeadingSpaces:
+    .byte 3             ; 3 leading blank spaces
 sAsciiNumberStr:
     .byte 1
 sBcdNumberArray:
     .byte 10
+sTrailingSpaces:
+    .byte 2             ; 2 trailing blank spaces
 
 
 
@@ -1082,11 +1086,14 @@ doNumericKey_Continuing:
     adc rNbrByte2, rKey
     adc rNbrByte3, rKey
     brcs doNumericKey_Overflow
+
+    call displayEntryNbr
     ret
 
 doNumericKey_Overflow:
     call doOverflow
     cbi rState, kDigitEntryBit                  ; We discard number and start over
+    clearEntryNbr
     ret
 
 
@@ -1100,6 +1107,24 @@ doOverflow:
     ; Prepare the LCD display
     setLcdRowColM 1, 0
     displayMsgOnLcdM sOverflowMsg
+    ret
+
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+displayEntryNbr:
+    ; Move the entry number to  display routine argument
+    moveEntryNbr2ArgByte
+
+displayArgByte:
+    ; Convert the number to decimal ASCII string and display
+    call convertDwordToAscStr
+    setLcdRowColM 1, 0
+    displayMsgOnLcdM sDisplayNbrStr
     ret
 
 
@@ -1127,6 +1152,16 @@ initStaticData_Loop:                               ; Actual transfer loop from P
         st X+, rTmp2
         dec rTmp1
         brne initStaticData_Loop
+
+    ; Also write the leading and trailing blanks for number strings
+    ldi rTmp1, ' '
+    ldiw X, sLeadingSpaces
+    st X+, rTmp1
+    st X+, rTmp1
+    st X+, rTmp1
+    ldiw X, sTrailingSpaces
+    st X+, rTmp1
+    st X+, rTmp1
 
     ret
 

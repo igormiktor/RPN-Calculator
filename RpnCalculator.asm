@@ -528,6 +528,22 @@
 ; **********************************
 
 ; Arguments:  None
+.macro moveArgByte2EntryNbr
+
+    mov rNbrByte0, rArgByte0
+    mov rNbrByte1, rArgByte1
+    mov rNbrByte2, rArgByte2
+    mov rNbrByte3, rArgByte3
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
 .macro moveRpnX2ArgBtye
 
     ldiw Z, sRpnX
@@ -535,6 +551,23 @@
     ld rArgByte1, Z+
     ld rArgByte2, Z+
     ld rArgByte3, Z+
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro moveArgBtye2RpnX
+
+    ldiw Z, sRpnX
+    st Z+, rArgByte0
+    st Z+, rArgByte1
+    st Z+, rArgByte2
+    st Z+, rArgByte3
 
 .endm
 
@@ -1092,6 +1125,7 @@ doNumericKey:
     cbi rState, kNbrSignBit                     ; Clear the sign indicator bit
     sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
     mov rNbrByte0, rKey
+    
     call displayEntryNbr                        ; Display the entry so far
     ret
 
@@ -1112,8 +1146,7 @@ doNumericKey_Continuing:
 
 doNumericKey_Overflow:
     call doOverflow
-    cbi rState, kDigitEntryBit                  ; We discard number and start over
-    clearEntryNbr
+    clearEntryNbr                               ; Discard the number but stay in input mode
     ret
 
 
@@ -1125,8 +1158,26 @@ doNumericKey_Overflow:
 doChangeSignKey:
 
     ; If entering number, change sign of number being entered
+    sbrs rState, kDigitEntryBitNbr
+    rjmp doChangeSignKey_NotEnteringNumber
 
+    moveEntryNbr2ArgByte
+    call doDword2sComplement
+    moveArgByte2EntryNbr
+
+    setLcdRowColM 1, 0
+    call displayArgByte
+    ret
+
+doChangeSignKey_NotEnteringNumber:
     ; If not entering number, change sign of RPN X
+
+    moveRpnX2ArgBtye
+    call doDword2sComplement
+    moveArgBtye2RpnX
+
+    setLcdRowColM 1, 0
+    call displayArgByte
     ret
 
 

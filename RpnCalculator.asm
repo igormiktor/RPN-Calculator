@@ -1125,7 +1125,7 @@ doNumericKey:
     cbi rState, kNbrSignBit                     ; Clear the sign indicator bit
     sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
     mov rNbrByte0, rKey
-    
+
     call displayEntryNbr                        ; Display the entry so far
     ret
 

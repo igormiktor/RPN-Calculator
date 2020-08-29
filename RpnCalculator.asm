@@ -479,6 +479,22 @@
 ; **********************************
 
 ; Arguments:  None
+.macro clearEntryNbr
+
+    clr rNbrByte0
+    clr rNbrByte1
+    clr rNbrByte2
+    clr rNbrByte3
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
 .macro moveEntryNbr2RpnX
 
     ldiw Z, sRpnX
@@ -486,6 +502,22 @@
     st Z+, rNbrByte1
     st Z+, rNbrByte2
     st Z+, rNbrByte3
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro moveEntryNbr2ArgByte
+
+    mov rArgByte0, rNbrByte0
+    mov rArgByte1, rNbrByte1
+    mov rArgByte2, rNbrByte2
+    mov rArgByte3, rNbrByte3
 
 .endm
 

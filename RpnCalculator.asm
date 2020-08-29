@@ -474,6 +474,40 @@
 
 
 
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro moveEntryNbr2RpnX
+
+    ldiw Z, sRpnX
+    st Z+, rNbrByte0
+    st Z+, rNbrByte1
+    st Z+, rNbrByte2
+    st Z+, rNbrByte3
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro moveRpnX2ArgBtye
+
+    ldiw Z, sRpnX
+    ld rArgByte0, Z+
+    ld rArgByte1, Z+
+    ld rArgByte2, Z+
+    ld rArgByte3, Z+
+
+.endm
+
+
+
 
 ; **********************************
 ;  D A T A   S E G M E N T

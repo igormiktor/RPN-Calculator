@@ -1756,16 +1756,16 @@ rollRpnStackDown:
 ;   Z                       = used as destination ptr
 ;   rTmp1                   = used
 
-    ; T -> Z
-    ldiw X, sRpnT
-    ldiw Z, sRpnZ
+    ; Y -> X
+    ldiw X, sRpnY
+    ldiw Z, sRpnX
     ldi rTmp1, 4
     mov rLoop1, rTmp1
-rollRpnStackDown_T2Z:
+    rollRpnStackDown_Y2X:
     ld rTmp1, X+
     st Z+, rTmp1
     dec rLoop1
-    brne rollRpnStackDown_T2Z
+    brne rollRpnStackDown_Y2X
 
     ; Z -> Y
     ldiw X, sRpnZ
@@ -1778,16 +1778,16 @@ rollRpnStackDown_Z2Y:
     dec rLoop1
     brne rollRpnStackDown_Z2Y
 
-    ; Y -> X
-    ldiw X, sRpnY
-    ldiw Z, sRpnX
+    ; T -> Z
+    ldiw X, sRpnT
+    ldiw Z, sRpnZ
     ldi rTmp1, 4
     mov rLoop1, rTmp1
-rollRpnStackDown_Y2X:
+rollRpnStackDown_T2Z:
     ld rTmp1, X+
     st Z+, rTmp1
     dec rLoop1
-    brne rollRpnStackUp_Y2X
+    brne rollRpnStackDown_T2Z
 
     ret
 

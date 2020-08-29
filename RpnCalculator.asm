@@ -540,6 +540,23 @@
 
 
 
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro moveRpnY2ArgBtye
+
+    ldiw Z, sRpnY
+    ld rArgByte0, Z+
+    ld rArgByte1, Z+
+    ld rArgByte2, Z+
+    ld rArgByte3, Z+
+
+.endm
+
+
+
 
 ; **********************************
 ;  D A T A   S E G M E N T
@@ -1069,10 +1086,13 @@ doNumericKey:
     rjmp doNumericKey_Continuing
                                                 ; Just started entering a number
     call rollRpnStackUp
+    call displayRpnY                            ; Display the new RPN Y
+
     clearEntryNbr                               ; Clear the registers we accumulate the number in
     cbi rState, kNbrSignBit                     ; Clear the sign indicator bit
     sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
     mov rNbrByte0, rKey
+    call displayEntryNbr                        ; Display the entry so far
     ret
 
 doNumericKey_Continuing:
@@ -1117,16 +1137,41 @@ doOverflow:
 ; **********************************
 
 displayEntryNbr:
-    ; Move the entry number to  display routine argument
+    ; Move the entry number to display routine argument
     moveEntryNbr2ArgByte
+    setLcdRowColM 1, 0
 
 displayArgByte:
     ; Convert the number to decimal ASCII string and display
     call convertDwordToAscStr
-    setLcdRowColM 1, 0
     displayMsgOnLcdM sDisplayNbrStr
     ret
 
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+displayRpnX:
+    ; Move RPN X to display routine argument
+    moveRpnX2ArgBtye
+    setLcdRowColM 1, 0
+    call displayArgByte
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+displayRpnY:
+    ; Move the entry number to  display routine argument
+    moveRpnY2ArgBtye
+    setLcdRowColM 0, 0
+    call displayArgByte
+    ret
 
 
 

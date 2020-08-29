@@ -1027,6 +1027,7 @@ doNumericKey_Continuing:
 
 doNumericKey_Overflow:
     call doOverflow
+    cbi rState, kDigitEntryBit                  ; We discard number and start over
     ret
 
 

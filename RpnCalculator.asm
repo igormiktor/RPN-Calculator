@@ -1215,8 +1215,8 @@ doOverflow:
 
 displayEntryNbr:
     ; Move the entry number to display routine argument
+    setLcdRowColM 1, 0                  ; Uses rArgByte0 & rArgByte1
     moveEntryNbr2ArgByte
-    setLcdRowColM 1, 0
 
 displayArgByte:
     ; Convert the number to decimal ASCII string and display
@@ -1232,8 +1232,8 @@ displayArgByte:
 
 displayRpnX:
     ; Move RPN X to display routine argument
+    setLcdRowColM 1, 0                  ; Uses rArgByte0 & rArgByte1
     moveRpnX2ArgBtye
-    setLcdRowColM 1, 0
     call displayArgByte
     ret
 
@@ -1245,8 +1245,8 @@ displayRpnX:
 
 displayRpnY:
     ; Move the entry number to  display routine argument
+    setLcdRowColM 0, 0                  ; Uses rArgByte0 & rArgByte1
     moveRpnY2ArgBtye
-    setLcdRowColM 0, 0
     call displayArgByte
     ret
 

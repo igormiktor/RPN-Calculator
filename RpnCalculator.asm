@@ -1118,6 +1118,32 @@ doNumericKey_Overflow:
 
 
 
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doChangeSignKey:
+
+    ; If entering number, change sign of number being entered
+
+    ; If not entering number, change sign of RPN X
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doEnterKey:
+
+    ; If entering number, stop entering and copy to RPN X
+
+    ; If not entering number, roll stack up
+
+    ret
+
+
 
 ; **********************************
 ;  S U B R O U T I N E

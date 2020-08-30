@@ -1190,10 +1190,29 @@ doChangeSignKey_NotEnteringNumber:
 
 doEnterKey:
 
-    ; If entering number, stop entering and copy to RPN X
+    sbrs rState, kDigitEntryBitNbr              ; Are we entering a number?
+    rjmp doEnterKey_NotEnteringNumber           ; No, jmp...
 
-    ; If not entering number, roll stack up
+    call endNumberEntryMode                     ; End number end mode
+                                                ; Intentional fall through...
+doEnterKey_NotEnteringNumber:
+    call liftRpnStack                           ; Always lift stack
+    call displayRpnY
+    sbi rState, kPriorEnterBit                  ; Set that we just hit the Enter key
 
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+endNumberEntryMode:
+
+    cbi rState, kDigitEntryBit                  ; Clear number entry mode state
+    moveEntryNbrToRpnX                          ; Move entered number to RPN X
+    call displayRpnX                            ; Update display
     ret
 
 

@@ -1704,6 +1704,7 @@ rollRpnStackUp:
 ;   X                       = used as source ptr
 ;   Z                       = used as destination ptr
 ;   rTmp1                   = used
+;   rLoop1                  = used
 
     ; Z -> T
     ldiw X, sRpnZ

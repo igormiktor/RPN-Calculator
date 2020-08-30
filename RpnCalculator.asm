@@ -792,7 +792,7 @@ main:
 
     initializeStack rTmp1
 
-    rcall initStaticData                        ; Move static data from PROGMEM to SRAM
+    rcall initializeStaticData                  ; Move static data from PROGMEM to SRAM
 
     ; Start the LCD display
     rcall initializeLcd
@@ -1272,7 +1272,7 @@ displayRpnY:
 ;  S U B R O U T I N E
 ; **********************************
 
-initStaticData:
+initializeStaticData:
 
     ; Copy the static strings into SRAM
 
@@ -1285,11 +1285,11 @@ initStaticData:
     ldi rTmp1, kdStaticDataLen
     ldiw Z, dStaticDataBegin << 1
     ldiw X, sStaticDataBegin
-initStaticData_Loop:                               ; Actual transfer loop from PROGMEM to SRAM
+initializeStaticData_Loop:                               ; Actual transfer loop from PROGMEM to SRAM
         lpm rTmp2, Z+
         st X+, rTmp2
         dec rTmp1
-        brne initStaticData_Loop
+        brne initializeStaticData_Loop
 
     ; Also write the leading and trailing blanks for number strings
     ldi rTmp1, ' '

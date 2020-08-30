@@ -1118,7 +1118,7 @@ doNumericKey:
     sbrs rState, kDigitEntryBitNbr
     rjmp doNumericKey_Continuing
                                                 ; Just started entering a number
-    call rollRpnStackUp
+    call liftRpnStack
     call displayRpnY                            ; Display the new RPN Y
 
     clearEntryNbr                               ; Clear the registers we accumulate the number in
@@ -1694,11 +1694,12 @@ multU16by8_1:
 ;  S U B R O U T I N E
 ; **********************************
 
-rollRpnStackUp:
+liftRpnStack:
 
-; Roll RPN stack up
+; Lift RPN stack up
 
 ; sRpnX -> sRpnY -> sRpnZ -> sRpnT -> <discard>
+; sRpnX unchanged
 
 ;   X                       = used as source ptr
 ;   Z                       = used as destination ptr
@@ -1710,33 +1711,33 @@ rollRpnStackUp:
     ldiw Z, sRpnT
     ldi rTmp1, 4
     mov rLoop1, rTmp1
-rollRpnStackUp_Z2T:
+liftRpnStack_Z2T:
     ld rTmp1, X+
     st Z+, rTmp1
     dec rLoop1
-    brne rollRpnStackUp_Z2T
+    brne liftRpnStack_Z2T
 
     ; Y -> Z
     ldiw X, sRpnY
     ldiw Z, sRpnZ
     ldi rTmp1, 4
     mov rLoop1, rTmp1
-rollRpnStackUp_Y2Z:
+liftRpnStack_Y2Z:
     ld rTmp1, X+
     st Z+, rTmp1
     dec rLoop1
-    brne rollRpnStackUp_Y2Z
+    brne liftRpnStack_Y2Z
 
     ; X -> Y
     ldiw X, sRpnX
     ldiw Z, sRpnY
     ldi rTmp1, 4
     mov rLoop1, rTmp1
-rollRpnStackUp_X2Y:
+liftRpnStack_X2Y:
     ld rTmp1, X+
     st Z+, rTmp1
     dec rLoop1
-    brne rollRpnStackUp_X2Y
+    brne liftRpnStack_X2Y
 
     ret
 
@@ -1746,11 +1747,12 @@ rollRpnStackUp_X2Y:
 ;  S U B R O U T I N E
 ; **********************************
 
-rollRpnStackDown:
+dropRpnStack:
 
-; Roll RPN stack down
+; Drop RPN stack down
 
 ; sRpnT -> sRpnZ -> sRpnY -> sRpnX -> <discard>
+; sRpnT unchanged
 
 ;   X                       = used as source ptr
 ;   Z                       = used as destination ptr
@@ -1761,33 +1763,33 @@ rollRpnStackDown:
     ldiw Z, sRpnX
     ldi rTmp1, 4
     mov rLoop1, rTmp1
-    rollRpnStackDown_Y2X:
+    dropRpnStack_Y2X:
     ld rTmp1, X+
     st Z+, rTmp1
     dec rLoop1
-    brne rollRpnStackDown_Y2X
+    brne dropRpnStack_Y2X
 
     ; Z -> Y
     ldiw X, sRpnZ
     ldiw Z, sRpnY
     ldi rTmp1, 4
     mov rLoop1, rTmp1
-rollRpnStackDown_Z2Y:
+dropRpnStack_Z2Y:
     ld rTmp1, X+
     st Z+, rTmp1
     dec rLoop1
-    brne rollRpnStackDown_Z2Y
+    brne dropRpnStack_Z2Y
 
     ; T -> Z
     ldiw X, sRpnT
     ldiw Z, sRpnZ
     ldi rTmp1, 4
     mov rLoop1, rTmp1
-rollRpnStackDown_T2Z:
+dropRpnStack_T2Z:
     ld rTmp1, X+
     st Z+, rTmp1
     dec rLoop1
-    brne rollRpnStackDown_T2Z
+    brne dropRpnStack_T2Z
 
     ret
 

@@ -261,13 +261,13 @@
 .def rArgByte2                      = r24       ; Third byte arg
 .def rArgByte3                      = r25       ; Fourth byte arg, MSB
 
-.def rDelayUsL                      = r22       ; Subroutine delayMicroSeconds
-.def rDelayUsH                      = r23       ; Subroutine delayMicroSeconds
 .def rMillisL                       = r22       ; Subroutine delayMilliSeconds
 .def rMillisH                       = r23       ; Subroutine delayMilliSeconds
 .def r10ths                         = r22       ; Subroutine delayTenthsOfSeconds
 .def rDTSOuter                      = r23       ; Subroutine delayTenthsOfSeconds
 
+.def rDelayUsL                      = r24       ; Subroutine delayMicroSeconds
+.def rDelayUsH                      = r25       ; Subroutine delayMicroSeconds
 .def rDWMSInnerL                    = r24       ; Subroutine delayMilliSeconds
 .def rDWMSInnerH                    = r25       ; Subroutine delayMilliSeconds
 .def rDTSInnerL                     = r24       ; Subroutine delayTenthsOfSeconds
@@ -341,8 +341,8 @@
 
 ; Arguments:  @0 = number of microseconds to delay (16-bit word)
 .macro delayMicroSecondsM
-    ldi rArgByte1, High( @0 )
-    ldi rArgByte0, Low( @0 )
+    ldi rDelayUsH, High( @0 )               ; Same as rArgByte3
+    ldi rDelayUsL, Low( @0 )                ; Same as rArgByte2
     call delayMicroSeconds
 .endm
 

@@ -261,18 +261,18 @@
 .def rArgByte2                      = r24       ; Third byte arg
 .def rArgByte3                      = r25       ; Fourth byte arg, MSB
 
-.def rMillisL                       = r22       ; Subroutine delayMilliSeconds
-.def rMillisH                       = r23       ; Subroutine delayMilliSeconds
 .def r10ths                         = r22       ; Subroutine delayTenthsOfSeconds
 .def rDTSOuter                      = r23       ; Subroutine delayTenthsOfSeconds
 
+.def rMillisL                       = r24       ; Subroutine delayMilliSeconds
+.def rMillisH                       = r25       ; Subroutine delayMilliSeconds
 .def rDelayUsL                      = r24       ; Subroutine delayMicroSeconds
 .def rDelayUsH                      = r25       ; Subroutine delayMicroSeconds
-.def rDWMSInnerL                    = r24       ; Subroutine delayMilliSeconds
-.def rDWMSInnerH                    = r25       ; Subroutine delayMilliSeconds
 .def rDTSInnerL                     = r24       ; Subroutine delayTenthsOfSeconds
 .def rDTSInnerH                     = r25       ; Subroutine delayTenthsOfSeconds
 
+.def rDWMSInnerL                    = r26       ; Subroutine delayMilliSeconds
+.def rDWMSInnerH                    = r27       ; Subroutine delayMilliSeconds
 
 
 ; **********************************
@@ -354,8 +354,8 @@
 
 ; Arguments:  @0 = number of milliseconds to delay (word value)
 .macro delayMilliSecondsM
-    ldi rArgByte1, High( @0 )
-    ldi rArgByte0, Low( @0 )
+    ldi rMillisH, High( @0 )                ; Same as rArgByte3
+    ldi rMillisL, Low( @0 )                 ; Same as rArgByte2
     call delayMilliSeconds
 .endm
 
@@ -367,7 +367,7 @@
 
 ; Arguments:  @0 = number of tenths of seconds to delay (byte value)
 .macro delayTenthsOfSecondsM
-    ldi rArgByte0, Low( @0 )
+    ldi r10ths, Low( @0 )                ; Same as rArgByte0
     call delayTenthsOfSeconds
 .endm
 

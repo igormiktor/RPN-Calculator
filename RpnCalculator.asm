@@ -1160,24 +1160,20 @@ doNumericKey_Overflow:
 doChangeSignKey:
 
     ; If entering number, change sign of number being entered
-    sbrs rState, kDigitEntryBitNbr
-    rjmp doChangeSignKey_NotEnteringNumber
+    sbrs rState, kDigitEntryBitNbr              ; Are we in number entry mode?
+    rjmp doChangeSignKey_NotEnteringNumber      ; No, jmp..
 
-    moveEntryNbrToArgByte
+    moveEntryNbrToArgByte                       ; Yes, so negate the number being entered
     call doDword2sComplement
     moveArgByteToEntryNbr
-
     setLcdRowColM 1, 0
     call displayArgByte
     ret
 
 doChangeSignKey_NotEnteringNumber:
-    ; If not entering number, change sign of RPN X
-
-    moveRpnXToArgBtye
+    moveRpnXToArgBtye                           ; Not in number entry mode, so negate RPN X
     call doDword2sComplement
     moveArgByteToRpnX
-
     setLcdRowColM 1, 0
     call displayArgByte
     ret

@@ -1208,7 +1208,7 @@ endNumberEntryMode:
 
     cbi rState, kDigitEntryBit                  ; Clear number entry mode state
     moveEntryNbrToRpnX                          ; Move entered number to RPN X
-    call displayRpnX                            ; Update display
+                                                ; Don't need to update display, number already displayed
     ret
 
 

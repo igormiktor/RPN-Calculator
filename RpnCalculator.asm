@@ -1680,37 +1680,6 @@ delayTenthsOfSeconds:
 ;  S U B R O U T I N E
 ; **********************************
 
-multU16by8:
-
-    ; r25:r24 = 16-bit multiplicand
-    ; r22 = 8-bit multiplicand
-    ; r18:r19:r20 = result
-
-#define rM16L       r24
-#define rM16H       r25
-#define rM8         r22
-#define rProd0      r18
-#define rProd1      r19
-#define rProd2      r20
-
-    mul rM16L, rM8      ; Multiply LSB
-    movw rProd0, r0     ; Copy result
-
-    mul rM16H, rM8      ; Multiply MSB
-    mov rProd2, r1      ; Copy MSB result to result byte 3
-    add rProd1, r0      ; Add LSB result to result byte 2
-    brcc 1f             ; If no carry, done
-    inc rProd2          ; Do the carry
-multU16by8_1:
-
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
 liftRpnStack:
 
 ; Lift RPN stack up

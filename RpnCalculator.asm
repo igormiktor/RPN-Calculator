@@ -815,7 +815,7 @@ main:
     displayMsgOnLcdM sLcdGreeting
 
     ; Configure the keypad to accept inputs
-    rcall doConfigureKeypad
+    rcall configureKeypad
 
     mainLoop:
         ; Look for rows to go low
@@ -1026,8 +1026,8 @@ doKey15:
 
 doKeyHit:
 
-    rcall doScanKeyPad
-    rcall doDisplayKey
+    rcall scanKeyPad
+    rcall displayKey
     delayMilliSecondsM 200                      ; Delay for button de-bounce
     ret
 
@@ -1037,7 +1037,7 @@ doKeyHit:
 ;  S U B R O U T I N E
 ; **********************************
 
-doDisplayKey:
+displayKey:
     ldiw X, sJumpTable                          ; Read number corresponding to key from SRAM
     lsl rKey                                    ; Multiply by 2 (jump addresses are words)
     add XL, rKey                                ; Add the offset (possible carry required)
@@ -1061,7 +1061,7 @@ doDisplayKey:
 ;   8   9   10  11
 ;   12  13  14  15
 
-doScanKeyPad:
+scanKeyPad:
     sbis pRowPin, kRow1                         ; Find row of keypress
     ldi rKey, 0                                 ; Set Row pointer
     sbis pRowPin, kRow2
@@ -1101,7 +1101,7 @@ doScanKeyPad:
     add rKey, rTmp1                             ; Combine ROW and COL for pointer
 
     ; Re-initialize columns and rows
-    rcall doConfigureKeypad
+    rcall configureKeypad
 
     ret
 
@@ -1205,7 +1205,6 @@ doOverflow:
     setLcdRowColM 1, 0
     displayMsgOnLcdM sOverflowMsg
     ret
-
 
 
 
@@ -1481,7 +1480,7 @@ displayMsgLoop:
 ;  S U B R O U T I N E
 ; **********************************
 
-doConfigureKeypad:
+configureKeypad:
 
     ; Configure the keybad to accept inputs
 

@@ -252,8 +252,8 @@
 .def rState                         = r19       ; State of operation
 .equ kDigitEntryBit                 = 0x01      ; Bit 0 set = digit entry mode; clear = not digit entry mode
 .equ kDigitEntryBitNbr              = 0         ; Bit number 0
-.equ kNbrSignBit                    = 0x02      ; Bit 1 set = number has negative sign; clear = no negative sign
-.equ kNbrSignBitNbr                 = 1         ; Bit number 1
+.equ kPriorEnterBit                 = 0x02      ; Bit 1 set = Enter key hit immediately prior
+.equ kPriorEnterBitNbr              = 1         ; Bit number 1
 
 
 .def rArgByte0                      = r22       ; First byte arg, LSB
@@ -1115,26 +1115,28 @@ doNumericKey:
 
     ; rKey = (inbound) the numerical value of number key
 
-    sbrs rState, kDigitEntryBitNbr
-    rjmp doNumericKey_Continuing
-                                                ; Just started entering a number
+    sbrc rState, kDigitEntryBitNbr              ; Are we already processing a number?
+    rjmp doNumericKey_Continuing                ; Yes, jmp
+                                                ; No, we are starting entry of a new number
+    sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
+    sbrs rState, kPriorEnterBitNbr              ; Was the previous key "Enter"?
+    rjmp doNumericKey_PriorEnter                ; Yes, jmp (skip stack lift)
+                                                ; No, so we need to do a stack lift
+    cbi rState, kPriorEnterBit                  ; Clear prior key was Enter bit
     call liftRpnStack
     call displayRpnY                            ; Display the new RPN Y
 
+doNumericKey_PriorEnter:
     clearEntryNbr                               ; Clear the registers we accumulate the number in
-    cbi rState, kNbrSignBit                     ; Clear the sign indicator bit
-    sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
     mov rNbrByte0, rKey
-
     call displayEntryNbr                        ; Display the entry so far
     ret
 
-doNumericKey_Continuing:
-    ; Multiply the existing number by 10 to incorporate a new digit
-    call multiplyBy10
+doNumericKey_Continuing:                        ; We are adding another digit to an on-going entry
+    call multiplyBy10                           ; Multiply the existing number by 10 to incorporate a new digit
     brcs doNumericKey_Overflow
 
-    add rNbrByte0, rKey
+    add rNbrByte0, rKey                         ; Add the current digit
     clr rKey                                    ; Doesn't affect carry flag
     adc rNbrByte1, rKey
     adc rNbrByte2, rKey

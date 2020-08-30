@@ -495,7 +495,7 @@
 ; **********************************
 
 ; Arguments:  None
-.macro moveEntryNbr2RpnX
+.macro moveEntryNbrToRpnX
 
     ldiw Z, sRpnX
     st Z+, rNbrByte0
@@ -512,7 +512,7 @@
 ; **********************************
 
 ; Arguments:  None
-.macro moveEntryNbr2ArgByte
+.macro moveEntryNbrToArgByte
 
     mov rArgByte0, rNbrByte0
     mov rArgByte1, rNbrByte1
@@ -528,7 +528,7 @@
 ; **********************************
 
 ; Arguments:  None
-.macro moveArgByte2EntryNbr
+.macro moveArgByteToEntryNbr
 
     mov rNbrByte0, rArgByte0
     mov rNbrByte1, rArgByte1
@@ -544,7 +544,7 @@
 ; **********************************
 
 ; Arguments:  None
-.macro moveRpnX2ArgBtye
+.macro moveRpnXToArgBtye
 
     ldiw Z, sRpnX
     ld rArgByte0, Z+
@@ -561,7 +561,7 @@
 ; **********************************
 
 ; Arguments:  None
-.macro moveArgBtye2RpnX
+.macro moveArgByteToRpnX
 
     ldiw Z, sRpnX
     st Z+, rArgByte0
@@ -578,7 +578,7 @@
 ; **********************************
 
 ; Arguments:  None
-.macro moveRpnY2ArgBtye
+.macro moveRpnYToArgBtye
 
     ldiw Z, sRpnY
     ld rArgByte0, Z+
@@ -1161,9 +1161,9 @@ doChangeSignKey:
     sbrs rState, kDigitEntryBitNbr
     rjmp doChangeSignKey_NotEnteringNumber
 
-    moveEntryNbr2ArgByte
+    moveEntryNbrToArgByte
     call doDword2sComplement
-    moveArgByte2EntryNbr
+    moveArgByteToEntryNbr
 
     setLcdRowColM 1, 0
     call displayArgByte
@@ -1172,9 +1172,9 @@ doChangeSignKey:
 doChangeSignKey_NotEnteringNumber:
     ; If not entering number, change sign of RPN X
 
-    moveRpnX2ArgBtye
+    moveRpnXToArgBtye
     call doDword2sComplement
-    moveArgBtye2RpnX
+    moveArgByteToRpnX
 
     setLcdRowColM 1, 0
     call displayArgByte
@@ -1216,7 +1216,7 @@ doOverflow:
 displayEntryNbr:
     ; Move the entry number to display routine argument
     setLcdRowColM 1, 0                  ; Uses rArgByte0 & rArgByte1
-    moveEntryNbr2ArgByte
+    moveEntryNbrToArgByte
 
 displayArgByte:
     ; Convert the number to decimal ASCII string and display
@@ -1233,7 +1233,7 @@ displayArgByte:
 displayRpnX:
     ; Move RPN X to display routine argument
     setLcdRowColM 1, 0                  ; Uses rArgByte0 & rArgByte1
-    moveRpnX2ArgBtye
+    moveRpnXToArgBtye
     call displayArgByte
     ret
 
@@ -1246,7 +1246,7 @@ displayRpnX:
 displayRpnY:
     ; Move the entry number to  display routine argument
     setLcdRowColM 0, 0                  ; Uses rArgByte0 & rArgByte1
-    moveRpnY2ArgBtye
+    moveRpnYToArgBtye
     call displayArgByte
     ret
 

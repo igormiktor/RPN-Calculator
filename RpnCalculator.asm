@@ -833,9 +833,8 @@ main:
 ; **********************************
 
 doKey0:
-    ldi rTmp2, '1'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 1
+    rcall doNumericKey
     ret
 
 
@@ -845,9 +844,8 @@ doKey0:
 ; **********************************
 
 doKey1:
-    ldi rTmp2, '2'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 2
+    rcall doNumericKey
     ret
 
 
@@ -857,9 +855,8 @@ doKey1:
 ; **********************************
 
 doKey2:
-    ldi rTmp2, '3'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 3
+    rcall doNumericKey
     ret
 
 
@@ -881,9 +878,8 @@ doKey3:
 ; **********************************
 
 doKey4:
-    ldi rTmp2, '4'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 4
+    rcall doNumericKey
     ret
 
 
@@ -893,9 +889,8 @@ doKey4:
 ; **********************************
 
 doKey5:
-    ldi rTmp2, '5'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 5
+    rcall doNumericKey
     ret
 
 
@@ -905,9 +900,8 @@ doKey5:
 ; **********************************
 
 doKey6:
-    ldi rTmp2, '6'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 6
+    rcall doNumericKey
     ret
 
 
@@ -929,9 +923,8 @@ doKey7:
 ; **********************************
 
 doKey8:
-    ldi rTmp2, '7'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 7
+    rcall doNumericKey
     ret
 
 
@@ -941,9 +934,8 @@ doKey8:
 ; **********************************
 
 doKey9:
-    ldi rTmp2, '8'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 8
+    rcall doNumericKey
     ret
 
 
@@ -953,9 +945,8 @@ doKey9:
 ; **********************************
 
 doKey10:
-    ldi rTmp2, '9'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 9
+    rcall doNumericKey
     ret
 
 
@@ -977,9 +968,7 @@ doKey11:
 ; **********************************
 
 doKey12:
-    ldi rTmp2, 's'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    rcall doChangeSignKey
     ret
 
 
@@ -989,9 +978,8 @@ doKey12:
 ; **********************************
 
 doKey13:
-    ldi rTmp2, '0'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    ldi rKey, 0
+    rcall doNumericKey
     ret
 
 
@@ -1001,9 +989,7 @@ doKey13:
 ; **********************************
 
 doKey14:
-    ldi rTmp2, 'E'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    rcall doEnterKey
     ret
 
 
@@ -1027,7 +1013,7 @@ doKey15:
 doKeyHit:
 
     rcall scanKeyPad
-    rcall displayKey
+    rcall dispatchKey
     delayMilliSecondsM 200                      ; Delay for button de-bounce
     ret
 
@@ -1037,7 +1023,7 @@ doKeyHit:
 ;  S U B R O U T I N E
 ; **********************************
 
-displayKey:
+dispatchKey:
     ldiw X, sJumpTable                          ; Read number corresponding to key from SRAM
     lsl rKey                                    ; Multiply by 2 (jump addresses are words)
     add XL, rKey                                ; Add the offset (possible carry required)

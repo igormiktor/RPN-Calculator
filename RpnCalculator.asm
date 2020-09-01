@@ -590,6 +590,84 @@
 
 
 
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro moveRpnXToScratch
+
+    ldiw Z, sRpnX
+    ld rScratch0, Z+
+    ld rScratch1, Z+
+    ld rScratch2, Z+
+    ld rScratch3, Z+
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro clearEnterKeyHitFlag
+
+    cbi rState, kPriorEnterBit                  ; Clear the Enter key flag
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro setEnterKeyHitFlag
+
+    sbi rState, kPriorEnterBit                  ; Set the Enter key flag
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro loadArgByteMaxPosValue
+
+    ldi rArgByte0, 0xff
+    ldi rArgByte1, 0xff
+    ldi rArgByte2, 0xff
+    ldi rArgByte3, 0x7f
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro loadArgByteMaxNegValue
+
+    ldi rArgByte0, 0x01
+    ldi rArgByte1, 0x00
+    ldi rArgByte2, 0x00
+    ldi rArgByte3, 0x80
+
+.endm
+
+
+
+
+
+
 
 ; **********************************
 ;  D A T A   S E G M E N T

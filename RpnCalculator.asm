@@ -1268,6 +1268,9 @@ doEnterKey:
 
 endNumberEntryMode:
 
+    sbrs rState, kDigitEntryBitNbr              ; Are we entering a number?
+    ret                                         ; No, we are not: return
+                                                ; Yes, we are: so...
     cbi rState, kDigitEntryBit                  ; Clear number entry mode state
     moveEntryNbrToRpnX                          ; Move entered number to RPN X
                                                 ; Don't need to update display, number already displayed

@@ -1198,14 +1198,14 @@ doNumericKey_PriorEnter:
 
 doNumericKey_Continuing:                        ; We are adding another digit to an on-going entry
     call multiplyBy10                           ; Multiply the existing number by 10 to incorporate a new digit
-    brcs doNumericKey_Overflow
+    brvs doNumericKey_Overflow
 
     add rNbrByte0, rKey                         ; Add the current digit
     clr rKey                                    ; Doesn't affect carry flag
     adc rNbrByte1, rKey
     adc rNbrByte2, rKey
     adc rNbrByte3, rKey
-    brcs doNumericKey_Overflow
+    brvs doNumericKey_Overflow
 
     call displayEntryNbr
     ret

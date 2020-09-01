@@ -1252,15 +1252,11 @@ doChangeSignKey_NotEnteringNumber:
 
 doEnterKey:
 
-    sbrs rState, kDigitEntryBitNbr              ; Are we entering a number?
-    rjmp doEnterKey_NotEnteringNumber           ; No, jmp...
+    call endNumberEntryMode
 
-    call endNumberEntryMode                     ; End number end mode
-                                                ; Intentional fall through...
-doEnterKey_NotEnteringNumber:
     call liftRpnStack                           ; Always lift stack
     call displayRpnY
-    sbi rState, kPriorEnterBit                  ; Set that we just hit the Enter key
+    setEnterKeyHitFlag
 
     ret
 

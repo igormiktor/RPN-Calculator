@@ -1185,8 +1185,8 @@ doNumericKey:
     sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
     sbrs rState, kPriorEnterBitNbr              ; Was the previous key "Enter"?
     rjmp doNumericKey_PriorEnter                ; Yes, jmp (skip stack lift)
-                                                ; No, so we need to do a stack lift
-    cbi rState, kPriorEnterBit                  ; Clear prior key was Enter bit
+
+    clearEnterKeyHitFlag                        ; No, so we need to do a stack lift
     call liftRpnStack
     call displayRpnY                            ; Display the new RPN Y
 
@@ -1223,9 +1223,11 @@ doNumericKey_Overflow:
 
 doChangeSignKey:
 
+    clearEnterKeyHitFlag
+
     ; If entering number, change sign of number being entered
     sbrs rState, kDigitEntryBitNbr              ; Are we in number entry mode?
-    rjmp doChangeSignKey_NotEnteringNumber      ; No, jmp..
+    rjmp doChangeSignKey_NotEnteringNumber      ; No, jmp...
 
     moveEntryNbrToArgByte                       ; Yes, so negate the number being entered
     call doDword2sComplement

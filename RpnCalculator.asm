@@ -1266,6 +1266,46 @@ doEnterKey:
 ;  S U B R O U T I N E
 ; **********************************
 
+doPlusKey:
+
+    clearEnterKeyHitFlag
+    rcall endNumberEntryMode
+
+    moveRpnXToScratch
+    rcall dropRpnStack
+    moveRpnXToArgBtye
+
+    add rArgByte0, rScratch0
+    adc rArgByte1, rScratch1
+    adc rArgByte2, rScratch2
+    adc rArgByte3, rScratch3
+    brvs doPlusKey_Overflow
+
+    moveArgByteToRpnX
+    rcall displayArgByte
+    ret
+
+doPlusKey_Overflow:
+    sbrc rArgByte3, 7                           ; Is it a pos overflow?
+    rjmp doPlusKey_OverflowNeg                  ; No, jmp...
+
+    loadArgByteMaxPosValue
+    rjmp doPlusKey_OverflowFinish
+
+doPlusKey_OverflowNeg:
+    loadArgByteMaxNegValue
+
+doPlusKey_OverflowFinish:
+    moveArgByteToRpnX
+    rcall doOverflow
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
 endNumberEntryMode:
 
     sbrs rState, kDigitEntryBitNbr              ; Are we entering a number?

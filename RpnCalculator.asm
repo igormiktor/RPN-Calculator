@@ -1179,18 +1179,18 @@ doNumericKey:
 
     ; rKey = (inbound) the numerical value of number key
 
-    sbrc rState, kDigitEntryBitNbr              ; Are we already processing a number?
-    rjmp doNumericKey_Continuing                ; Yes, jmp
-                                                ; No, we are starting entry of a new number
+    sbrc rState, kDigitEntryBitNbr              ; Skip next if not already entering a number
+    rjmp doNumericKey_Continuing                ; Yes we are entering a number, so jmp
+                                                ; Not previously entering, so we are starting entry of a number
     sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
-    sbrs rState, kPriorEnterBitNbr              ; Was the previous key "Enter"?
-    rjmp doNumericKey_PriorEnter                ; Yes, jmp (skip stack lift)
+    sbrc rState, kPriorEnterBitNbr              ; Skip next if the previous key was not "Enter"
+    rjmp doNumericKey_PriorEnter                ; Yes it was Enter, so jmp (and skip stack lift)
 
-    clearEnterKeyHitFlag                        ; No, so we need to do a stack lift
-    call liftRpnStack
+    call liftRpnStack                           ; Not previously an Enter, so we need to do a stack lift
     call displayRpnY                            ; Display the new RPN Y
 
 doNumericKey_PriorEnter:
+    clearEnterKeyHitFlag
     clearEntryNbr                               ; Clear the registers we accumulate the number in
     mov rNbrByte0, rKey
     call displayEntryNbr                        ; Display the entry so far
@@ -1226,10 +1226,10 @@ doChangeSignKey:
     clearEnterKeyHitFlag
 
     ; If entering number, change sign of number being entered
-    sbrs rState, kDigitEntryBitNbr              ; Are we in number entry mode?
-    rjmp doChangeSignKey_NotEnteringNumber      ; No, jmp...
+    sbrs rState, kDigitEntryBitNbr              ; Skip next if we are in number entry mode
+    rjmp doChangeSignKey_NotEnteringNumber      ; Not number entry mode, so jmp...
 
-    moveEntryNbrToArgByte                       ; Yes, so negate the number being entered
+    moveEntryNbrToArgByte                       ; Skip to here, so entering a number: negate it
     call doDword2sComplement
     moveArgByteToEntryNbr
     setLcdRowColM 1, 0
@@ -1286,8 +1286,8 @@ doPlusKey:
     ret
 
 doPlusKey_Overflow:
-    sbrc rArgByte3, 7                           ; Is it a pos overflow?
-    rjmp doPlusKey_OverflowNeg                  ; No, jmp...
+    sbrc rArgByte3, kSignBitNbr                 ; Skip next if it is a positive overflow
+    rjmp doPlusKey_OverflowNeg                  ; Negative overflow, so jmp...
 
     loadArgByteMaxPosValue
     rjmp doPlusKey_OverflowFinish

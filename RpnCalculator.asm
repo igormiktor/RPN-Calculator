@@ -1285,8 +1285,8 @@ doPlusKey:
     rcall displayArgByte
     ret
 
-doPlusKey_Overflow:
-    sbrc rArgByte3, kSignBitNbr                 ; Skip next if it is a positive overflow
+doPlusKey_Overflow:                             ; Sign of overflow determined by sign of rScratch or original rArgByte
+    sbrc rScratch3, kSignBitNbr                 ; Skip next if it is a positive overflow
     rjmp doPlusKey_OverflowNeg                  ; Negative overflow, so jmp...
 
     loadArgByteMaxPosValue

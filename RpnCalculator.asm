@@ -452,7 +452,7 @@
 .macro displayMsgOnLcdM
 
     ldiw Z, @0
-    call displayMsgOnLcd
+    rcall displayMsgOnLcd
 
 .endm
 
@@ -1186,18 +1186,18 @@ doNumericKey:
     sbrc rState, kPriorEnterBitNbr              ; Skip next if the previous key was not "Enter"
     rjmp doNumericKey_PriorEnter                ; Yes it was Enter, so jmp (and skip stack lift)
 
-    call liftRpnStack                           ; Not previously an Enter, so we need to do a stack lift
-    call displayRpnY                            ; Display the new RPN Y
+    rcall liftRpnStack                          ; Not previously an Enter, so we need to do a stack lift
+    rcall displayRpnY                           ; Display the new RPN Y
 
 doNumericKey_PriorEnter:
     clearEnterKeyHitFlag
     clearEntryNbr                               ; Clear the registers we accumulate the number in
     mov rNbrByte0, rKey
-    call displayEntryNbr                        ; Display the entry so far
+    rcall displayEntryNbr                       ; Display the entry so far
     ret
 
 doNumericKey_Continuing:                        ; We are adding another digit to an on-going entry
-    call multiplyBy10                           ; Multiply the existing number by 10 to incorporate a new digit
+    rcall multiplyBy10                          ; Multiply the existing number by 10 to incorporate a new digit
     brvs doNumericKey_Overflow
 
     add rNbrByte0, rKey                         ; Add the current digit
@@ -1207,11 +1207,11 @@ doNumericKey_Continuing:                        ; We are adding another digit to
     adc rNbrByte3, rKey
     brvs doNumericKey_Overflow
 
-    call displayEntryNbr
+    rcall displayEntryNbr
     ret
 
 doNumericKey_Overflow:
-    call doOverflow
+    rcall doOverflow
     clearEntryNbr                               ; Discard the number but stay in input mode
     ret
 
@@ -1230,18 +1230,18 @@ doChangeSignKey:
     rjmp doChangeSignKey_NotEnteringNumber      ; Not number entry mode, so jmp...
 
     moveEntryNbrToArgByte                       ; Skip to here, so entering a number: negate it
-    call doDword2sComplement
+    rcall doDword2sComplement
     moveArgByteToEntryNbr
     setLcdRowColM 1, 0
-    call displayArgByte
+    rcall displayArgByte
     ret
 
 doChangeSignKey_NotEnteringNumber:
     moveRpnXToArgBtye                           ; Not in number entry mode, so negate RPN X
-    call doDword2sComplement
+    rcall doDword2sComplement
     moveArgByteToRpnX
     setLcdRowColM 1, 0
-    call displayArgByte
+    rcall displayArgByte
     ret
 
 
@@ -1252,10 +1252,10 @@ doChangeSignKey_NotEnteringNumber:
 
 doEnterKey:
 
-    call endNumberEntryMode
+    rcall endNumberEntryMode
 
-    call liftRpnStack                           ; Always lift stack
-    call displayRpnY
+    rcall liftRpnStack                          ; Always lift stack
+    rcall displayRpnY
     setEnterKeyHitFlag
 
     ret
@@ -1383,7 +1383,7 @@ displayEntryNbr:
 
 displayArgByte:
     ; Convert the number to decimal ASCII string and display
-    call convertDwordToAscStr
+    rcall convertDwordToAscStr
     displayMsgOnLcdM sDisplayNbrStr
     ret
 
@@ -1397,7 +1397,7 @@ displayRpnX:
     ; Move RPN X to display routine argument
     setLcdRowColM 1, 0                  ; Uses rArgByte0 & rArgByte1
     moveRpnXToArgBtye
-    call displayArgByte
+    rcall displayArgByte
     ret
 
 
@@ -1410,7 +1410,7 @@ displayRpnY:
     ; Move the entry number to  display routine argument
     setLcdRowColM 0, 0                  ; Uses rArgByte0 & rArgByte1
     moveRpnYToArgBtye
-    call displayArgByte
+    rcall displayArgByte
     ret
 
 
@@ -1974,7 +1974,7 @@ multiplyBy10:
     ret
 
 multiplyBy10_Overflow:                          ; TODO think about error handling/propagation
-    call doOverflow
+    rcall doOverflow
     ret
 
 

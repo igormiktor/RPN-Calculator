@@ -1306,6 +1306,48 @@ doPlusKey_OverflowFinish:
 ;  S U B R O U T I N E
 ; **********************************
 
+doMinusKey:
+
+    clearEnterKeyHitFlag
+    rcall endNumberEntryMode
+
+    moveRpnXToScratch
+    rcall dropRpnStack
+    moveRpnXToArgBtye
+
+    mov rTmp1, rArgByte3                        ; Save so we can get sign if needed
+
+    sub rArgByte0, rScratch0
+    sbc rArgByte1, rScratch1
+    sbc rArgByte2, rScratch2
+    sbc rArgByte3, rScratch3
+    brvs doMinusKey_Overflow
+
+    moveArgByteToRpnX
+    rcall displayArgByte
+    ret
+
+doMinusKey_Overflow:                            ; Sign of overflow determined by sign of rArgByte3, saved in rTmp1
+    sbrc rTmp1, kSignBitNbr                     ; Skip next if it is a positive overflow
+    rjmp doMinusKey_OverflowNeg                 ; Negative overflow, so jmp...
+
+    loadArgByteMaxPosValue
+    rjmp doMinusKey_OverflowFinish
+
+doMinusKey_OverflowNeg:
+    loadArgByteMaxNegValue
+
+doMinusKey_OverflowFinish:
+    moveArgByteToRpnX
+    rcall doOverflow
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
 endNumberEntryMode:
 
     sbrs rState, kDigitEntryBitNbr              ; Are we entering a number?

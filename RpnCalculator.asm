@@ -838,7 +838,7 @@ dStaticDataBegin:
 .dw  doKey12, doKey13, doKey14, doKey15
 
 ; LCD Message
-.db 'K', 'e', 'y', ' ', 'h', 'i', 't', ':', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
+.db ' ', 'R', 'P', 'N', ' ', 'C', 'a', 'l', 'c', 'u', 'l', 'a', 't', 'o', 'r', ' '
 
 ; Blank Line
 .db ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '

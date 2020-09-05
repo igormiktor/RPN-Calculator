@@ -892,6 +892,8 @@ main:
     setLcdRowColM 0, 0
     displayMsgOnLcdM sLcdGreeting
 
+    rcall clearRpnStack
+
     ; Configure the keypad to accept inputs
     rcall configureKeypad
 
@@ -1456,6 +1458,24 @@ initializeStaticData_Loop:                               ; Actual transfer loop 
     ldiw X, sTrailingSpaces
     st X+, rTmp1
     st X+, rTmp1
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+clearRpnStack:
+
+    ldiw Z, sRpnX0
+    ldi rTmp2, 16
+    clr rTmp1
+clearRpnStack_Loop:
+        st Z+, rTmp1
+        dec rTmp2
+        brne clearRpnStack_Loop
 
     ret
 

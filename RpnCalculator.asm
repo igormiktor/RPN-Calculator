@@ -1034,9 +1034,7 @@ doKey10:
 ; **********************************
 
 doKey11:
-    ldi rTmp2, '-'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    rcall doMinusKey
     ret
 
 
@@ -1077,9 +1075,7 @@ doKey14:
 ; **********************************
 
 doKey15:
-    ldi rTmp2, '+'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    rcall doPlusKey
     ret
 
 

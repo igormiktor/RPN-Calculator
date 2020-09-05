@@ -1087,8 +1087,8 @@ doKey15:
 doKeyHit:
 
     rcall scanKeyPad
-    rcall dispatchKey
     delayMilliSecondsM 200                      ; Delay for button de-bounce
+    rcall dispatchKey
     ret
 
 

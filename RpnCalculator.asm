@@ -614,7 +614,7 @@
 ; Arguments:  None
 .macro clearEnterKeyHitFlag
 
-    cbi rState, kPriorEnterBit                  ; Clear the Enter key flag
+    cbr rState, kPriorEnterBit                  ; Clear the Enter key flag
 
 .endm
 
@@ -627,7 +627,7 @@
 ; Arguments:  None
 .macro setEnterKeyHitFlag
 
-    sbi rState, kPriorEnterBit                  ; Set the Enter key flag
+    sbr rState, kPriorEnterBit                  ; Set the Enter key flag
 
 .endm
 
@@ -1346,7 +1346,7 @@ doMinusKey_OverflowFinish:
 
 beginNumberEntryMode:
 
-    sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
+    sbr rState, kDigitEntryBit                  ; Set that we are in number entry mode
     sbi pGreenLedPort, pGreenLedPortBit         ; Turn on the green LED
     ret
 
@@ -1361,7 +1361,7 @@ endNumberEntryMode:
     sbrs rState, kDigitEntryBitNbr              ; Are we in number entry mode?
     ret                                         ; No, we are not: return
                                                 ; Yes, we are: so...
-    cbi rState, kDigitEntryBit                  ; Clear number entry mode state
+    cbr rState, kDigitEntryBit                  ; Clear number entry mode state
     cbi pGreenLedPort, pGreenLedPortBit         ; Turn off the green LED
     moveEntryNbrToRpnX                          ; Move entered number to RPN X
                                                 ; Don't need to update display, number already displayed

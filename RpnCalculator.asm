@@ -1178,7 +1178,7 @@ doNumericKey:
     sbrc rState, kDigitEntryBitNbr              ; Skip next if not already entering a number
     rjmp doNumericKey_Continuing                ; Yes we are entering a number, so jmp
                                                 ; Not previously entering, so we are starting entry of a number
-    sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
+    rcall beginNumberEntryMode                  ; Set that we are in number entry mode
     sbrc rState, kPriorEnterBitNbr              ; Skip next if the previous key was not "Enter"
     rjmp doNumericKey_PriorEnter                ; Yes it was Enter, so jmp (and skip stack lift)
 
@@ -1344,12 +1344,25 @@ doMinusKey_OverflowFinish:
 ;  S U B R O U T I N E
 ; **********************************
 
+beginNumberEntryMode:
+
+    sbi rState, kDigitEntryBit                  ; Set that we are in number entry mode
+    sbi pGreenLedPort, pGreenLedPortBit         ; Turn on the green LED
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
 endNumberEntryMode:
 
-    sbrs rState, kDigitEntryBitNbr              ; Are we entering a number?
+    sbrs rState, kDigitEntryBitNbr              ; Are we in number entry mode?
     ret                                         ; No, we are not: return
                                                 ; Yes, we are: so...
     cbi rState, kDigitEntryBit                  ; Clear number entry mode state
+    cbi pGreenLedPort, pGreenLedPortBit         ; Turn off the green LED
     moveEntryNbrToRpnX                          ; Move entered number to RPN X
                                                 ; Don't need to update display, number already displayed
     ret

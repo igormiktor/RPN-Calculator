@@ -450,6 +450,58 @@
 ;  M A C R O
 ; **********************************
 
+; Arguments:  none
+.macro turnOnGreenLed
+
+    sbi pGreenLedPort, pGreenLedPortBit
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  none
+.macro turnOnRedLed
+
+    sbi pRedLedPort, pRedLedPortBit
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  none
+.macro turnOffGreenLed
+
+    cbi pGreenLedPort, pGreenLedPortBit
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  none
+.macro turnOffRedLed
+
+    cbi pRedLedPort, pRedLedPortBit
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
 ; Arguments:  @0 = address of 16 bit message to display on LCD
 .macro displayMsgOnLcdM
 
@@ -917,11 +969,11 @@ main:
     cbi pRedLedPort, pRedLedPortBit
 
     ; Flash the LEDs
-    sbi pGreenLedPort, pGreenLedPortBit
-    sbi pRedLedPort, pRedLedPortBit
+    turnOnGreenLed
+    turnOnRedLed
     delayTenthsOfSecondsM 20
-    cbi pGreenLedPort, pGreenLedPortBit
-    cbi pRedLedPort, pRedLedPortBit
+    turnOffGreenLed
+    turnOffRedLed
 
     ; Prepare the LCD display
     setLcdRowColM 0, 0
@@ -1389,7 +1441,7 @@ doMinusKey_OverflowFinish:
 beginNumberEntryMode:
 
     sbr rState, kDigitEntryBit                  ; Set that we are in number entry mode
-    sbi pGreenLedPort, pGreenLedPortBit         ; Turn on the green LED
+    turnOnGreenLed
     ret
 
 
@@ -1404,9 +1456,9 @@ endNumberEntryMode:
     ret                                         ; No, we are not: return
                                                 ; Yes, we are: so...
     cbr rState, kDigitEntryBit                  ; Clear number entry mode state
-    cbi pGreenLedPort, pGreenLedPortBit         ; Turn off the green LED
     moveEntryNbrToRpnX                          ; Move entered number to RPN X
                                                 ; Don't need to update display, number already displayed
+    turnOffGreenLed
     ret
 
 

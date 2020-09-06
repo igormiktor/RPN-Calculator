@@ -1301,6 +1301,7 @@ doPlusKey:
     brvs doPlusKey_Overflow
 
     moveArgByteToRpnX
+    setLcdRowColM 1, 0
     rcall displayArgByte
     ret
 
@@ -1344,6 +1345,7 @@ doMinusKey:
     brvs doMinusKey_Overflow
 
     moveArgByteToRpnX
+    setLcdRowColM 1, 0
     rcall displayArgByte
     ret
 

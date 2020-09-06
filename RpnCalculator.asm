@@ -631,6 +631,22 @@
 ; **********************************
 
 ; Arguments:  None
+.macro moveArgByteToScratch
+
+    mov rScratch0, rArgByte0
+    mov rScratch1, rArgByte1
+    mov rScratch2, rArgByte2
+    mov rScratch3, rArgByte3
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
 .macro clearEnterKeyHitFlag
 
     cbr rState, kPriorEnterBit                  ; Clear the Enter key flag
@@ -1331,17 +1347,17 @@ doMinusKey:
     clearEnterKeyHitFlag
     rcall endNumberEntryMode
 
-    moveRpnXToScratch
+    moveRpnXToArgBtye
+    rcall doDword2sComplement
+    moveArgByteToScratch
     rcall dropRpnStack
     rcall displayRpnY
     moveRpnXToArgBtye
 
-    mov rTmp1, rArgByte3                        ; Save so we can get sign if needed
-
-    sub rArgByte0, rScratch0
-    sbc rArgByte1, rScratch1
-    sbc rArgByte2, rScratch2
-    sbc rArgByte3, rScratch3
+    add rArgByte0, rScratch0
+    adc rArgByte1, rScratch1
+    adc rArgByte2, rScratch2
+    adc rArgByte3, rScratch3
     brvs doMinusKey_Overflow
 
     moveArgByteToRpnX
@@ -1349,8 +1365,8 @@ doMinusKey:
     rcall displayArgByte
     ret
 
-doMinusKey_Overflow:                            ; Sign of overflow determined by sign of rArgByte3, saved in rTmp1
-    sbrc rTmp1, kSignBitNbr                     ; Skip next if it is a positive overflow
+doMinusKey_Overflow:                            ; Sign of overflow determined by sign of of rScratch or original rArgByte
+    sbrc rScratch3, kSignBitNbr                 ; Skip next if it is a positive overflow
     rjmp doMinusKey_OverflowNeg                 ; Negative overflow, so jmp...
 
     loadArgByteMaxPosValue

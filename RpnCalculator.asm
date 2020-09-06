@@ -784,11 +784,13 @@
 
 
 
-
-; **********************************
-;  D A T A   S E G M E N T
-;        ( S R A M )
-; **********************************
+; ********************************************************************
+; ********************************************************************
+;
+;  D A T A   S E G M E N T   ( S R A M )
+;
+; ********************************************************************
+; ********************************************************************
 
 .dseg
 .org SRAM_START
@@ -868,9 +870,13 @@ sTrailingSpaces:
 
 
 
-; **********************************
+; ********************************************************************
+; ********************************************************************
+
 ;  C O D E  S E G M E N T
-; **********************************
+;
+; ********************************************************************
+; ********************************************************************
 
 .cseg
 .org 0x00
@@ -939,9 +945,13 @@ sTrailingSpaces:
 
 
 
-; ***************************************
+; ********************************************************************
+; ********************************************************************
+;
 ;  D A T A   I N   C O D E S E G
-; ***************************************
+;
+; ********************************************************************
+; ********************************************************************
 
 ; Rem: data in codeseg stored and addressed by words (not bytes)
 
@@ -968,9 +978,13 @@ dStaticDataEnd:
 
 
 
-; ***************************************
+; ********************************************************************
+; ********************************************************************
+;
 ;  I N T E R R U P T   H A N D L E R S
-; ***************************************
+;
+; ********************************************************************
+; ********************************************************************
 
 
 ; None
@@ -978,9 +992,13 @@ dStaticDataEnd:
 
 
 
-; ***************************************
+; ********************************************************************
+; ********************************************************************
+;
 ;  M A I N   ( R E S E T )
-; ***************************************
+;
+; ********************************************************************
+; ********************************************************************
 
 main:
 
@@ -1025,266 +1043,14 @@ main:
 
 
 
-; **********************************
-;  S U B R O U T I N E
-; **********************************
 
-doKey0:
-    ldi rKey, 1
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey1:
-    ldi rKey, 2
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey2:
-    ldi rKey, 3
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey3:
-    ldi rTmp2, '/'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey4:
-    ldi rKey, 4
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey5:
-    ldi rKey, 5
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey6:
-    ldi rKey, 6
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey7:
-    ldi rTmp2, 'x'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey8:
-    ldi rKey, 7
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey9:
-    ldi rKey, 8
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey10:
-    ldi rKey, 9
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey11:
-    rcall doMinusKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey12:
-    rcall doChangeSignKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey13:
-    ldi rKey, 0
-    rcall doNumericKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey14:
-    rcall doEnterKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKey15:
-    rcall doPlusKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-doKeyHit:
-
-    rcall scanKeyPad
-    delayMilliSecondsM 200                      ; Delay for button de-bounce
-    clearOverflowCondition                      ; Any key hit clears overflow
-    rcall dispatchKey
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-dispatchKey:
-    ldiw X, sJumpTable                          ; Read number corresponding to key from SRAM
-    lsl rKey                                    ; Multiply by 2 (jump addresses are words)
-    add XL, rKey                                ; Add the offset (possible carry required)
-    clr rTmp2                                   ; Doesn't affect carry flag
-    adc XH, rTmp2                               ; X now points to the low byte in SRAM of the jump address
-    ld ZL, X+
-    ld ZH, X                                    ; Z now contains the address to call
-    icall
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-; Returns the number of the key hit in register rKey
-; Numbered as:
-;   0   1   2   3
-;   4   5   6   7
-;   8   9   10  11
-;   12  13  14  15
-
-scanKeyPad:
-    sbis pRowPin, kRow1                         ; Find row of keypress
-    ldi rKey, 0                                 ; Set Row pointer
-    sbis pRowPin, kRow2
-    ldi rKey, 4
-    sbis pRowPin, kRow3
-    ldi rKey, 8
-    sbis pRowPin, kRow4
-    ldi rKey, 12
-
-    ; To read the column value need to flip the configuration of rows & columns
-    ; Reconfigure rows
-    in rTmp1, pRowDirD                          ; Change Rows to outputs
-    ori rTmp1, kRowBitsOnes
-    out pRowDirD, rTmp1
-    in rTmp1, pColDirD                          ; Change Columns to inputs
-    andi rTmp1, kColBitsZeros
-    out pColDirD, rTmp1
-    ; Reconfigure columns
-    in rTmp1, pRowPort                          ; Set Rows low
-    andi rTmp1, kRowBitsZeros
-    out pRowPort, rTmp1
-    in rTmp1, pColPort                          ; Set pull-up resistors on Cols
-    ori rTmp1, kColBitsOnes
-    out pColPort, rTmp1
-
-    delayMicroSecondsM 200                      ; Allow time for port to settle
-
-    sbis pColPin, kCol1                         ; Find column of keypress
-    ldi rTmp1, 0
-    sbis pColPin, kCol2
-    ldi rTmp1, 1
-    sbis pColPin, kCol3
-    ldi rTmp1, 2
-    sbis pColPin, kCol4
-    ldi rTmp1, 3
-
-    add rKey, rTmp1                             ; Combine ROW and COL for pointer
-
-    ; Re-initialize columns and rows
-    rcall configureKeypad
-
-    ret
-
+; ********************************************************************
+; ********************************************************************
+;
+;  H I G H - L E V E L   K E Y   H A N D L E R S
+;
+; ********************************************************************
+; ********************************************************************
 
 
 ; **********************************
@@ -1508,6 +1274,16 @@ doOverflow:
 
 
 
+
+; ********************************************************************
+; ********************************************************************
+;
+;  C A L C U L A T O R   D I S P L A Y
+;
+; ********************************************************************
+; ********************************************************************
+
+
 ; **********************************
 ;  S U B R O U T I N E
 ; **********************************
@@ -1543,49 +1319,21 @@ displayRpnX:
 ; **********************************
 
 displayRpnY:
-    ; Move the entry number to  display routine argument
-    setLcdRowColM 0, 0                  ; Uses rArgByte0 & rArgByte1
-    moveRpnYToArgBtye
-    rcall displayArgByte
-    ret
+   ; Move the entry number to  display routine argument
+   setLcdRowColM 0, 0                  ; Uses rArgByte0 & rArgByte1
+   moveRpnYToArgBtye
+   rcall displayArgByte
+   ret
 
 
 
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-initializeStaticData:
-
-    ; Copy the static strings into SRAM
-
-    ; Z             = pointer to program memory
-    ; X             = pointer to SRAM
-    ; rTmp1         = counter
-    ; rTmp2         = transfer register
-
-    ; Set up pointers to read from PROGMEM to SRAM
-    ldi rTmp1, kdStaticDataLen
-    ldiw Z, dStaticDataBegin << 1
-    ldiw X, sStaticDataBegin
-initializeStaticData_Loop:                               ; Actual transfer loop from PROGMEM to SRAM
-        lpm rTmp2, Z+
-        st X+, rTmp2
-        dec rTmp1
-        brne initializeStaticData_Loop
-
-    ; Also write the leading and trailing blanks for number strings
-    ldi rTmp1, ' '
-    ldiw X, sLeadingSpaces
-    st X+, rTmp1
-    st X+, rTmp1
-    st X+, rTmp1
-    ldiw X, sTrailingSpaces
-    st X+, rTmp1
-    st X+, rTmp1
-
-    ret
-
+; ********************************************************************
+; ********************************************************************
+;
+;  S T A C K   M A N A G E M E N T
+;
+; ********************************************************************
+; ********************************************************************
 
 
 ; **********************************
@@ -1601,383 +1349,6 @@ clearRpnStack_Loop:
         st Z+, rTmp1
         dec rTmp2
         brne clearRpnStack_Loop
-
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-initializeLcd:
-
-    ; Configure the LCD pins for output
-    sbi pLcdD4DirD, pLcdD4DirDBit
-    sbi pLcdD5DirD, pLcdD5DirDBit
-    sbi pLcdD6DirD, pLcdD6DirDBit
-    sbi pLcdD7DirD, pLcdD7DirDBit
-    sbi pLcdEnableDirD, pLcdEnableDirDBit
-    sbi pLcdDataSelectDirD, pLcdDataSelectDirDBit
-
-    ; Set LCD pins LOW
-    cbi pLcdD4Port, pLcdD4PortBit
-    cbi pLcdD5Port, pLcdD5PortBit
-    cbi pLcdD6Port, pLcdD6PortBit
-    cbi pLcdD7Port, pLcdD7PortBit
-    cbi pLcdEnablePort, pLcdEnablePortBit
-    cbi pLcdDataSelectPort, pLcdDataSelectPortBit
-
-    ; Wait 50 milliseconds to ensure full voltage rise
-    delayMilliSecondsM 50
-
-    cbi pLcdDataSelectPort, pLcdDataSelectPortBit   ; Pull DS pin Low (sending commands)
-    cbi pLcdEnablePort, pLcdEnablePortBit           ; Pull E pin Low
-
-    ; Need to send 0x03 three times
-
-    ; First time
-    ldi rLcdArg0, 0x03
-    rcall write4BitsToLcd
-
-    ; Wait > 4.1 ms
-    delayMicroSecondsM  4500
-
-    ; Second time
-    ldi rLcdArg0, 0x03
-    rcall write4BitsToLcd
-
-    ; Wait > 4.1 ms
-    delayMicroSecondsM  4500
-
-    ; Third try and go...
-    ldi rLcdArg0, 0x03
-    rcall write4BitsToLcd
-
-    ; Wait >150 us
-    delayMicroSecondsM  200
-
-    ; This actually sets the 4-bit interface
-    ldi rLcdArg0, 0x02
-    rcall write4BitsToLcd
-
-    ; Set nbr of lines and font
-    sendCmdToLcdM  ( kLcdFunctionSet | kLcd2Line | kLcd5x8Dots )
-
-    ; Turn on display, with cursor off and blinking off
-    sendCmdToLcdM ( kLcdDisplayControl | kLcdDisplayOn | kLcdCursorOff | kLcdBlinkOff )
-
-    ; Set text entry more (L to R)
-    sendCmdToLcdM  ( kLcdEntryModeSet | kLcdEntryLeft )
-
-    ; Clear display
-    sendCmdToLcdM kLcdClearDisplay
-    delayMicroSecondsM 2000                     ; Clear cmd takes a long time...
-
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-write4BitsToLcd:
-
-    ; Register rLcdArg0 is passed as parameter (the 4-bits to write)
-
-    ; rLcdArg0 = the 4-bits to write to the LCD in lower nibble (modified)
-    ; rTmp1 used as a temporary register
-
-    ; Protect rDelayUsH:rDelayUsL (a.k.a. rArgByte3:rArgByte2)
-
-    push rDelayUsL
-    push rDelayUsH
-
-    ; First write the pins with the 4-bit value;
-    ; The 4 pins are on the lower nibble of a single PORT
-    andi rLcdArg0, 0x0F                         ; Mask out just the lower nibble
-    in rTmp1, pLcdD4Port
-    andi rTmp1, 0xF0                            ; Save just the upper nibble of PORTC in @1
-    or rLcdArg0, rTmp1                          ; Combine upper nibble of PORTC with lower nibble value
-    out pLcdD4Port, rLcdArg0
-
-    ; Now pulse the enable pin to have the LCD read the value
-    cbi pLcdEnablePort, pLcdEnablePortBit       ; Enable pin LOW
-    delayMicroSecondsM 2
-    sbi pLcdEnablePort, pLcdEnablePortBit       ; Enable pin HIGH (actual enable pulse)
-    delayMicroSecondsM 2                        ; Enable pulse must be > 450ns
-    cbi pLcdEnablePort, pLcdEnablePortBit       ; Enable pin LOW
-    delayMicroSecondsM 100                      ; Seems like a lot but didn't work with 70us... Command needs > 37us to settle
-
-    pop rDelayUsH
-    pop rDelayUsL
-
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-sendDataToLcd:
-
-    ; Register rLcdArg0 is passed as parameter
-
-    ; rLcdArg0 = the byte to write to the LCD (modified)
-    ; rDisplayTmp used as a temporary register
-    ; (rTmp1 used as a temporary by write4BitsToLcd)
-
-
-    sbi pLcdDataSelectPort, pLcdDataSelectPortBit   ; Pin on to send data
-    rjmp send8BitsToLcd
-
-sendCmdToLcd:
-
-    cbi pLcdDataSelectPort, pLcdDataSelectPortBit   ; Pin off to send command
-    ; Intentional fall through
-
-send8BitsToLcd:
-    mov rDisplayTmp, rLcdArg0                       ; Save the value
-    swap rLcdArg0
-    rcall write4BitsToLcd                           ; Send the upper nibble
-    mov rLcdArg0, rDisplayTmp                       ; Restore the value
-    rcall write4BitsToLcd                           ; Send the lower nibble
-
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-setLcdRowCol:
-
-    ; rLcdArg0 and rLcdArg1 passed as parameters (row, col)
-
-    ; rLcdArg0 = LCD row (0-1)
-    ; rLcdArg1 = LCD col (0-15)
-
-    cpi rLcdArg0, 0                             ; Compare row to 0
-    breq NoOffsetRequired                       ; If row == 0, skip offset
-    subi rLcdArg1, -kLcdSecondRowOffset         ; Add the offset for second row to column
-NoOffsetRequired:
-    ori rLcdArg1, kLcdSetDdramAddr              ; Incorporate the command itself
-    mov rLcdArg0, rLcdArg1                      ; Move the cmd to rLcdArg0
-    rcall sendCmdToLcd
-
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-displayMsgOnLcd:
-
-    ; Z passed as parameter (pointer to message, modified)
-
-    ; Z             = pointer to SRAM to 16 character (byte) message to display
-    ; rTmp1         = temporary
-    ; rLoop1        = loop counter
-    ; rLcdArg0      = Used
-
-    ; Position display is assumed to be set previously
-
-    ; Set up loop and display
-    ldi rTmp1, kDisplayMsgLen
-    mov rLoop1, rTmp1
-displayMsgLoop:
-        ld rLcdArg0, Z+
-        rcall sendDataToLcd
-        dec rLoop1
-        brne displayMsgLoop
-
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-configureKeypad:
-
-    ; Configure the keybad to accept inputs
-
-    ; rTmp1     = used as a scratch register
-
-    ; Configure keypad column pins
-    in rTmp1, pColDirD                          ; Set PD4-PD7, columns, as output (others unchanged)
-    ori rTmp1, kColBitsOnes
-    out pColDirD, rTmp1
-    in rTmp1, pColPort                          ; Set PD4-PD7 as low
-    andi rTmp1, kColBitsZeros
-    out pColPort, rTmp1
-
-    ; Configure keypad row pins
-    in rTmp1, pRowDirD                          ; Set PB0-PB3, rows, as input
-    andi rTmp1, kRowBitsZeros
-    out pRowDirD, rTmp1
-    in rTmp1, pRowPort                          ; Enable pull ups on PB0-PB3
-    ori rTmp1, kRowBitsOnes
-    out pRowPort, rTmp1
-
-    delayMicroSecondsM 200                      ; Allow time for port to settle
-
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-delayMicroSeconds:
-
-    ; Register r25:24 is passed as parameter (the number of microseconds to delay)
-
-    ; r24 = LSB microseconds to delay
-    ; r25 = MSB microseconds to delay
-
-    ; 1 microsecond = 16 cycles.
-    ; Call/return overhead takes 7-8 cycles (depending on rcall or call).
-
-    ; So burn up 8 more cycles (not counting the ret) to make a whole microsecond, including
-    ; a check to see if we are done (i.e., the request was a 1us delay).
-    ; Then do a loop that burns 16 cycles each time
-
-    nop                                 ; 1 cycle
-    nop                                 ; 1 cycle
-    nop                                 ; 1 cycle
-    nop                                 ; 1 cycle
-    sbiw rDelayUsH:rDelayUsL, 1         ; 2 cycles
-    breq delayMicroseconds_Ret          ; 1 cycle if false/continue, 2 cycles (8 total) if true/branch
-    nop                                 ; 1 cycle (8 total)
-
-    delayMicroseconds_Loop:
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-
-        sbiw rDelayUsH:rDelayUsL, 1     ; 2 cycles
-        brne delayMicroseconds_Loop     ; 2 cycles (16 total) on true/loop, 1 cycle on false/exit_loop
-    nop                                 ; 1 cycle (so total 16 on exit from last loop)
-
-delayMicroseconds_Ret:
-    ret
-
-
-
-;; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-delayMilliSeconds:
-
-    ; Register r25:r24 (milliSecCounter) is passed as parameter
-
-    ; r25:r24 = number of milliseconds to count (comes in as argument)
-    ;     = number of times to execute the outer+inner loops combined
-    ; r16 = outer loop counter byte
-    ; r26 = low byte of inner loop counter word
-    ; r27 = high byte of inner loop counter word
-
-    ; Executing the following combination of inner and outer loop cycles takes almost precisely 1 millisecond at 16 MHz
-    .equ kDWMSOuterCount    = 2
-    .equ kDWMSInnerCount    = 1997
-
-    ; Top of loop for number of milliseconds
-    DWMS_Loop1:
-
-        ; Initialize outer loop (uses a byte counter and counts down)
-        ldi rDWMSOuter, kDWMSOuterCount
-
-        ; Top of outer loop
-        DWMS_Loop2:
-
-            ; Initialze inner loop (uses a word counter and counts down)
-            ldiw rDWMSInner, kDWMSInnerCount
-
-            ; Top of inner loop
-            DWMS_Loop3:
-
-                ; Decrement and test inner loop
-                sbiw rDWMSInnerH:rDWMSInnerL, 1
-                brne DWMS_Loop3
-                ; Done with inner loop
-
-            ; Decrement and test outer loop
-            dec rDWMSOuter
-            brne DWMS_Loop2
-            ; Done with outer loop
-
-        ; Decrement and test millisecond loop
-        sbiw rMillisH:rMillisL, 1
-        brne DWMS_Loop1
-        ; Done with the requested number of milliseconds
-
-    ret
-
-
-
-; **********************************
-;  S U B R O U T I N E
-; **********************************
-
-delayTenthsOfSeconds:
-
-    ; Register r24 (tenthOfSecCounter) is passed as parameter
-    ; r24 = number of tenths-of-seconds to count (comes in as argument)
-    ;     = number of times to execute the outer+inner loops combined
-    ; r25 = outer loop counter byte
-    ; r26 = low byte of inner loop counter word
-    ; r27 = high byte of inner loop counter word
-
-    ; Executing the following combination of inner and outer loop cycles takes almost precisely 0.1 seconds at 16 Mhz
-    .equ kDTSOuterCount     = 7
-    .equ kDTSInnerCount     = 57142
-
-    ; Top of loop for number of tenths-of-seconds
-    DTS_Loop1:
-        ; Initialize outer loop (uses a byte counter and counts down)
-        ldi rDTSOuter, kDTSOuterCount
-
-        ; Top of outer loop
-        DTS_Loop2:
-            ; Initialze inner loop (uses a word counter and counts down)
-            ldiw rDTSInner, kDTSInnerCount
-
-            ; Top of inner loop
-            DTS_Loop3:
-                ; Decrement and test inner loop
-                sbiw rDTSInnerH:rDTSInnerL, 1
-                brne DTS_Loop3
-                ; Done with inner loop
-
-            ; Decrement and test outer loop
-            dec rDTSOuter
-            brne DTS_Loop2
-            ; Done with outer loop
-
-        ; Decrement and test tenth-of-second loop
-        dec r10ths
-        brne DTS_Loop1
-        ; Done with the requested number of tenths-of-seconds
 
     ret
 
@@ -2086,6 +1457,15 @@ dropRpnStack_T2Z:
 
     ret
 
+
+
+; ********************************************************************
+; ********************************************************************
+;
+;  M A T H   S U P P O R T  &  C O N V E R S I O N
+;
+; ********************************************************************
+; ********************************************************************
 
 
 ; **********************************
@@ -2403,3 +1783,728 @@ getOneDecimalDigit_3:
     st Z+, rTmp1                        ; Count of multiples subtracted is the digit, save and increment Z
 
 	ret
+
+
+
+; ********************************************************************
+; ********************************************************************
+;
+;  K E Y P A D   S U P P O R T
+;
+; ********************************************************************
+; ********************************************************************
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKeyHit:
+
+    rcall scanKeyPad
+    delayMilliSecondsM 200                      ; Delay for button de-bounce
+    clearOverflowCondition                      ; Any key hit clears overflow
+    rcall dispatchKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+dispatchKey:
+    ldiw X, sJumpTable                          ; Read number corresponding to key from SRAM
+    lsl rKey                                    ; Multiply by 2 (jump addresses are words)
+    add XL, rKey                                ; Add the offset (possible carry required)
+    clr rTmp2                                   ; Doesn't affect carry flag
+    adc XH, rTmp2                               ; X now points to the low byte in SRAM of the jump address
+    ld ZL, X+
+    ld ZH, X                                    ; Z now contains the address to call
+    icall
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+; Returns the number of the key hit in register rKey
+; Numbered as:
+;   0   1   2   3
+;   4   5   6   7
+;   8   9   10  11
+;   12  13  14  15
+
+scanKeyPad:
+    sbis pRowPin, kRow1                         ; Find row of keypress
+    ldi rKey, 0                                 ; Set Row pointer
+    sbis pRowPin, kRow2
+    ldi rKey, 4
+    sbis pRowPin, kRow3
+    ldi rKey, 8
+    sbis pRowPin, kRow4
+    ldi rKey, 12
+
+    ; To read the column value need to flip the configuration of rows & columns
+    ; Reconfigure rows
+    in rTmp1, pRowDirD                          ; Change Rows to outputs
+    ori rTmp1, kRowBitsOnes
+    out pRowDirD, rTmp1
+    in rTmp1, pColDirD                          ; Change Columns to inputs
+    andi rTmp1, kColBitsZeros
+    out pColDirD, rTmp1
+    ; Reconfigure columns
+    in rTmp1, pRowPort                          ; Set Rows low
+    andi rTmp1, kRowBitsZeros
+    out pRowPort, rTmp1
+    in rTmp1, pColPort                          ; Set pull-up resistors on Cols
+    ori rTmp1, kColBitsOnes
+    out pColPort, rTmp1
+
+    delayMicroSecondsM 200                      ; Allow time for port to settle
+
+    sbis pColPin, kCol1                         ; Find column of keypress
+    ldi rTmp1, 0
+    sbis pColPin, kCol2
+    ldi rTmp1, 1
+    sbis pColPin, kCol3
+    ldi rTmp1, 2
+    sbis pColPin, kCol4
+    ldi rTmp1, 3
+
+    add rKey, rTmp1                             ; Combine ROW and COL for pointer
+
+    ; Re-initialize columns and rows
+    rcall configureKeypad
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+configureKeypad:
+
+    ; Configure the keybad to accept inputs
+
+    ; rTmp1     = used as a scratch register
+
+    ; Configure keypad column pins
+    in rTmp1, pColDirD                          ; Set PD4-PD7, columns, as output (others unchanged)
+    ori rTmp1, kColBitsOnes
+    out pColDirD, rTmp1
+    in rTmp1, pColPort                          ; Set PD4-PD7 as low
+    andi rTmp1, kColBitsZeros
+    out pColPort, rTmp1
+
+    ; Configure keypad row pins
+    in rTmp1, pRowDirD                          ; Set PB0-PB3, rows, as input
+    andi rTmp1, kRowBitsZeros
+    out pRowDirD, rTmp1
+    in rTmp1, pRowPort                          ; Enable pull ups on PB0-PB3
+    ori rTmp1, kRowBitsOnes
+    out pRowPort, rTmp1
+
+    delayMicroSecondsM 200                      ; Allow time for port to settle
+
+    ret
+
+
+
+
+; ********************************************************************
+; ********************************************************************
+;
+;  L O W - L E V E L   K E Y   H A N D L E R S
+;
+; ********************************************************************
+; ********************************************************************
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey0:
+    ldi rKey, 1
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey1:
+    ldi rKey, 2
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey2:
+    ldi rKey, 3
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey3:
+    ldi rTmp2, '/'
+    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
+    sendDataToLcdMR rTmp2
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey4:
+    ldi rKey, 4
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey5:
+    ldi rKey, 5
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey6:
+    ldi rKey, 6
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey7:
+    ldi rTmp2, 'x'
+    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
+    sendDataToLcdMR rTmp2
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey8:
+    ldi rKey, 7
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey9:
+    ldi rKey, 8
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey10:
+    ldi rKey, 9
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey11:
+    rcall doMinusKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey12:
+    rcall doChangeSignKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey13:
+    ldi rKey, 0
+    rcall doNumericKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey14:
+    rcall doEnterKey
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+doKey15:
+    rcall doPlusKey
+    ret
+
+
+
+
+; ********************************************************************
+; ********************************************************************
+;
+;  L C D   D R I V E R S
+;
+; ********************************************************************
+; ********************************************************************
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+initializeLcd:
+
+    ; Configure the LCD pins for output
+    sbi pLcdD4DirD, pLcdD4DirDBit
+    sbi pLcdD5DirD, pLcdD5DirDBit
+    sbi pLcdD6DirD, pLcdD6DirDBit
+    sbi pLcdD7DirD, pLcdD7DirDBit
+    sbi pLcdEnableDirD, pLcdEnableDirDBit
+    sbi pLcdDataSelectDirD, pLcdDataSelectDirDBit
+
+    ; Set LCD pins LOW
+    cbi pLcdD4Port, pLcdD4PortBit
+    cbi pLcdD5Port, pLcdD5PortBit
+    cbi pLcdD6Port, pLcdD6PortBit
+    cbi pLcdD7Port, pLcdD7PortBit
+    cbi pLcdEnablePort, pLcdEnablePortBit
+    cbi pLcdDataSelectPort, pLcdDataSelectPortBit
+
+    ; Wait 50 milliseconds to ensure full voltage rise
+    delayMilliSecondsM 50
+
+    cbi pLcdDataSelectPort, pLcdDataSelectPortBit   ; Pull DS pin Low (sending commands)
+    cbi pLcdEnablePort, pLcdEnablePortBit           ; Pull E pin Low
+
+    ; Need to send 0x03 three times
+
+    ; First time
+    ldi rLcdArg0, 0x03
+    rcall write4BitsToLcd
+
+    ; Wait > 4.1 ms
+    delayMicroSecondsM  4500
+
+    ; Second time
+    ldi rLcdArg0, 0x03
+    rcall write4BitsToLcd
+
+    ; Wait > 4.1 ms
+    delayMicroSecondsM  4500
+
+    ; Third try and go...
+    ldi rLcdArg0, 0x03
+    rcall write4BitsToLcd
+
+    ; Wait >150 us
+    delayMicroSecondsM  200
+
+    ; This actually sets the 4-bit interface
+    ldi rLcdArg0, 0x02
+    rcall write4BitsToLcd
+
+    ; Set nbr of lines and font
+    sendCmdToLcdM  ( kLcdFunctionSet | kLcd2Line | kLcd5x8Dots )
+
+    ; Turn on display, with cursor off and blinking off
+    sendCmdToLcdM ( kLcdDisplayControl | kLcdDisplayOn | kLcdCursorOff | kLcdBlinkOff )
+
+    ; Set text entry more (L to R)
+    sendCmdToLcdM  ( kLcdEntryModeSet | kLcdEntryLeft )
+
+    ; Clear display
+    sendCmdToLcdM kLcdClearDisplay
+    delayMicroSecondsM 2000                     ; Clear cmd takes a long time...
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+write4BitsToLcd:
+
+    ; Register rLcdArg0 is passed as parameter (the 4-bits to write)
+
+    ; rLcdArg0 = the 4-bits to write to the LCD in lower nibble (modified)
+    ; rTmp1 used as a temporary register
+
+    ; Protect rDelayUsH:rDelayUsL (a.k.a. rArgByte3:rArgByte2)
+
+    push rDelayUsL
+    push rDelayUsH
+
+    ; First write the pins with the 4-bit value;
+    ; The 4 pins are on the lower nibble of a single PORT
+    andi rLcdArg0, 0x0F                         ; Mask out just the lower nibble
+    in rTmp1, pLcdD4Port
+    andi rTmp1, 0xF0                            ; Save just the upper nibble of PORTC in @1
+    or rLcdArg0, rTmp1                          ; Combine upper nibble of PORTC with lower nibble value
+    out pLcdD4Port, rLcdArg0
+
+    ; Now pulse the enable pin to have the LCD read the value
+    cbi pLcdEnablePort, pLcdEnablePortBit       ; Enable pin LOW
+    delayMicroSecondsM 2
+    sbi pLcdEnablePort, pLcdEnablePortBit       ; Enable pin HIGH (actual enable pulse)
+    delayMicroSecondsM 2                        ; Enable pulse must be > 450ns
+    cbi pLcdEnablePort, pLcdEnablePortBit       ; Enable pin LOW
+    delayMicroSecondsM 100                      ; Seems like a lot but didn't work with 70us... Command needs > 37us to settle
+
+    pop rDelayUsH
+    pop rDelayUsL
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+sendDataToLcd:
+
+    ; Register rLcdArg0 is passed as parameter
+
+    ; rLcdArg0 = the byte to write to the LCD (modified)
+    ; rDisplayTmp used as a temporary register
+    ; (rTmp1 used as a temporary by write4BitsToLcd)
+
+
+    sbi pLcdDataSelectPort, pLcdDataSelectPortBit   ; Pin on to send data
+    rjmp send8BitsToLcd
+
+sendCmdToLcd:
+
+    cbi pLcdDataSelectPort, pLcdDataSelectPortBit   ; Pin off to send command
+    ; Intentional fall through
+
+send8BitsToLcd:
+    mov rDisplayTmp, rLcdArg0                       ; Save the value
+    swap rLcdArg0
+    rcall write4BitsToLcd                           ; Send the upper nibble
+    mov rLcdArg0, rDisplayTmp                       ; Restore the value
+    rcall write4BitsToLcd                           ; Send the lower nibble
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+setLcdRowCol:
+
+    ; rLcdArg0 and rLcdArg1 passed as parameters (row, col)
+
+    ; rLcdArg0 = LCD row (0-1)
+    ; rLcdArg1 = LCD col (0-15)
+
+    cpi rLcdArg0, 0                             ; Compare row to 0
+    breq NoOffsetRequired                       ; If row == 0, skip offset
+    subi rLcdArg1, -kLcdSecondRowOffset         ; Add the offset for second row to column
+NoOffsetRequired:
+    ori rLcdArg1, kLcdSetDdramAddr              ; Incorporate the command itself
+    mov rLcdArg0, rLcdArg1                      ; Move the cmd to rLcdArg0
+    rcall sendCmdToLcd
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+displayMsgOnLcd:
+
+    ; Z passed as parameter (pointer to message, modified)
+
+    ; Z             = pointer to SRAM to 16 character (byte) message to display
+    ; rTmp1         = temporary
+    ; rLoop1        = loop counter
+    ; rLcdArg0      = Used
+
+    ; Position display is assumed to be set previously
+
+    ; Set up loop and display
+    ldi rTmp1, kDisplayMsgLen
+    mov rLoop1, rTmp1
+displayMsgLoop:
+        ld rLcdArg0, Z+
+        rcall sendDataToLcd
+        dec rLoop1
+        brne displayMsgLoop
+
+    ret
+
+
+
+
+; ********************************************************************
+; ********************************************************************
+;
+;  I N I T I A L I Z A T I O N
+;
+; ********************************************************************
+; ********************************************************************
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+initializeStaticData:
+
+    ; Copy the static strings into SRAM
+
+    ; Z             = pointer to program memory
+    ; X             = pointer to SRAM
+    ; rTmp1         = counter
+    ; rTmp2         = transfer register
+
+    ; Set up pointers to read from PROGMEM to SRAM
+    ldi rTmp1, kdStaticDataLen
+    ldiw Z, dStaticDataBegin << 1
+    ldiw X, sStaticDataBegin
+initializeStaticData_Loop:                               ; Actual transfer loop from PROGMEM to SRAM
+        lpm rTmp2, Z+
+        st X+, rTmp2
+        dec rTmp1
+        brne initializeStaticData_Loop
+
+    ; Also write the leading and trailing blanks for number strings
+    ldi rTmp1, ' '
+    ldiw X, sLeadingSpaces
+    st X+, rTmp1
+    st X+, rTmp1
+    st X+, rTmp1
+    ldiw X, sTrailingSpaces
+    st X+, rTmp1
+    st X+, rTmp1
+
+    ret
+
+
+
+
+; ********************************************************************
+; ********************************************************************
+;
+;  T I M I N G  &  D E L A Y
+;
+; ********************************************************************
+; ********************************************************************
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+delayMicroSeconds:
+
+    ; Register r25:24 is passed as parameter (the number of microseconds to delay)
+
+    ; r24 = LSB microseconds to delay
+    ; r25 = MSB microseconds to delay
+
+    ; 1 microsecond = 16 cycles.
+    ; Call/return overhead takes 7-8 cycles (depending on rcall or call).
+
+    ; So burn up 8 more cycles (not counting the ret) to make a whole microsecond, including
+    ; a check to see if we are done (i.e., the request was a 1us delay).
+    ; Then do a loop that burns 16 cycles each time
+
+    nop                                 ; 1 cycle
+    nop                                 ; 1 cycle
+    nop                                 ; 1 cycle
+    nop                                 ; 1 cycle
+    sbiw rDelayUsH:rDelayUsL, 1         ; 2 cycles
+    breq delayMicroseconds_Ret          ; 1 cycle if false/continue, 2 cycles (8 total) if true/branch
+    nop                                 ; 1 cycle (8 total)
+
+    delayMicroseconds_Loop:
+        nop                             ; 1 cycle
+        nop                             ; 1 cycle
+        nop                             ; 1 cycle
+        nop                             ; 1 cycle
+
+        nop                             ; 1 cycle
+        nop                             ; 1 cycle
+        nop                             ; 1 cycle
+        nop                             ; 1 cycle
+
+        nop                             ; 1 cycle
+        nop                             ; 1 cycle
+        nop                             ; 1 cycle
+        nop                             ; 1 cycle
+
+        sbiw rDelayUsH:rDelayUsL, 1     ; 2 cycles
+        brne delayMicroseconds_Loop     ; 2 cycles (16 total) on true/loop, 1 cycle on false/exit_loop
+    nop                                 ; 1 cycle (so total 16 on exit from last loop)
+
+delayMicroseconds_Ret:
+    ret
+
+
+
+;; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+delayMilliSeconds:
+
+    ; Register r25:r24 (milliSecCounter) is passed as parameter
+
+    ; r25:r24 = number of milliseconds to count (comes in as argument)
+    ;     = number of times to execute the outer+inner loops combined
+    ; r16 = outer loop counter byte
+    ; r26 = low byte of inner loop counter word
+    ; r27 = high byte of inner loop counter word
+
+    ; Executing the following combination of inner and outer loop cycles takes almost precisely 1 millisecond at 16 MHz
+    .equ kDWMSOuterCount    = 2
+    .equ kDWMSInnerCount    = 1997
+
+    ; Top of loop for number of milliseconds
+    DWMS_Loop1:
+
+        ; Initialize outer loop (uses a byte counter and counts down)
+        ldi rDWMSOuter, kDWMSOuterCount
+
+        ; Top of outer loop
+        DWMS_Loop2:
+
+            ; Initialze inner loop (uses a word counter and counts down)
+            ldiw rDWMSInner, kDWMSInnerCount
+
+            ; Top of inner loop
+            DWMS_Loop3:
+
+                ; Decrement and test inner loop
+                sbiw rDWMSInnerH:rDWMSInnerL, 1
+                brne DWMS_Loop3
+                ; Done with inner loop
+
+            ; Decrement and test outer loop
+            dec rDWMSOuter
+            brne DWMS_Loop2
+            ; Done with outer loop
+
+        ; Decrement and test millisecond loop
+        sbiw rMillisH:rMillisL, 1
+        brne DWMS_Loop1
+        ; Done with the requested number of milliseconds
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+delayTenthsOfSeconds:
+
+    ; Register r24 (tenthOfSecCounter) is passed as parameter
+    ; r24 = number of tenths-of-seconds to count (comes in as argument)
+    ;     = number of times to execute the outer+inner loops combined
+    ; r25 = outer loop counter byte
+    ; r26 = low byte of inner loop counter word
+    ; r27 = high byte of inner loop counter word
+
+    ; Executing the following combination of inner and outer loop cycles takes almost precisely 0.1 seconds at 16 Mhz
+    .equ kDTSOuterCount     = 7
+    .equ kDTSInnerCount     = 57142
+
+    ; Top of loop for number of tenths-of-seconds
+    DTS_Loop1:
+        ; Initialize outer loop (uses a byte counter and counts down)
+        ldi rDTSOuter, kDTSOuterCount
+
+        ; Top of outer loop
+        DTS_Loop2:
+            ; Initialze inner loop (uses a word counter and counts down)
+            ldiw rDTSInner, kDTSInnerCount
+
+            ; Top of inner loop
+            DTS_Loop3:
+                ; Decrement and test inner loop
+                sbiw rDTSInnerH:rDTSInnerL, 1
+                brne DTS_Loop3
+                ; Done with inner loop
+
+            ; Decrement and test outer loop
+            dec rDTSOuter
+            brne DTS_Loop2
+            ; Done with outer loop
+
+        ; Decrement and test tenth-of-second loop
+        dec r10ths
+        brne DTS_Loop1
+        ; Done with the requested number of tenths-of-seconds
+
+    ret

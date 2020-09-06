@@ -1342,6 +1342,7 @@ doEnterKey:
 
     rcall liftRpnStack                          ; Always lift stack
     rcall displayRpnY
+    rcall displayRpnX                           ; May not be displayed (e.g., after overflow)
     setEnterKeyHitFlag
 
     ret
@@ -1456,9 +1457,10 @@ endNumberEntryMode:
     ret                                         ; No, we are not: return
                                                 ; Yes, we are: so...
     cbr rState, kDigitEntryBit                  ; Clear number entry mode state
-    moveEntryNbrToRpnX                          ; Move entered number to RPN X
-                                                ; Don't need to update display, number already displayed
     turnOffGreenLed
+    moveEntryNbrToRpnX
+    rcall displayRpnX                           ; In case of prior overflow
+
     ret
 
 

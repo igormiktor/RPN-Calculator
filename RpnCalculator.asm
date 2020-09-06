@@ -2076,13 +2076,18 @@ convertDwordToAscStr:
     ; rArgByte3:rArgByte0   = 32-bit quantity to convert (not changed)
     ; rTmp1                 = working register (changed)
     ; rTmp2                 = working register (changed)
-    ; rScratch0             = working register (changed)
+    ; rScratch03:rScratch0  = working register (not changed)
     ; Z                     = working register (changed)
 
     push rArgByte0                      ; Save the number
 	push rArgByte1
     push rArgByte2
     push rArgByte3
+
+    push rScratch0
+    push rScratch1
+    push rScratch2
+    push rScratch3
 
     ldiw Z, sAsciiNumberStr
     ldi rTmp1, ' '                      ; Put a space in the leading spot
@@ -2124,7 +2129,12 @@ convertDwordToAscStr_3:                 ; This loop converts non-zero BCD digits
     dec rScratch0                       ; Still more BCD digits to go?
     brne convertDwordToAscStr_3         ; Yes, go to top of this loop
 
-    pop rArgByte3                       ; Restore original number
+    pop rScratch3                       ; Restore rScratch
+    pop rScratch2
+    pop rScratch1
+    pop rScratch0
+
+    pop rArgByte3                       ; Restore rArgByte
     pop rArgByte2
     pop rArgByte1
     pop rArgByte0

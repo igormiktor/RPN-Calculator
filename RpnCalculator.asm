@@ -933,6 +933,106 @@ main:
     ; Configure the keypad to accept inputs
     rcall configureKeypad
 
+    ; BEGIN TEST CODE
+
+        ldi rArgByte0, BYTE1( 10 )
+        ldi rArgByte1, BYTE2( 10 )
+        ldi rArgByte2, BYTE3( 10 )
+        ldi rArgByte3, BYTE4( 10 )
+        moveArgByteToRpnX
+        rcall displayRpnX
+        delayTenthsOfSecondsM 30
+
+        ldi rArgByte0, BYTE1( 5 )
+        ldi rArgByte1, BYTE2( 5 )
+        ldi rArgByte2, BYTE3( 5 )
+        ldi rArgByte3, BYTE4( 5 )
+        moveArgByteToRpnY
+        rcall displayRpnY
+        delayTenthsOfSecondsM 30
+
+        ldi rArgByte0, BYTE1( 12345 )
+        ldi rArgByte1, BYTE2( 12345 )
+        ldi rArgByte2, BYTE3( 12345 )
+        ldi rArgByte3, BYTE4( 12345 )
+        moveArgByteToRpnX
+        rcall displayRpnX
+        delayTenthsOfSecondsM 30
+
+        rcall liftRpnStack
+        rcall displayRpnY
+        rcall displayRpnX
+        delayTenthsOfSecondsM 30
+
+        rcall doChangeSignKey
+        delayTenthsOfSecondsM 30
+
+        rcall doMinusKey
+        delayTenthsOfSecondsM 30
+
+        rcall doMinusKey
+        delayTenthsOfSecondsM 30
+
+        rcall displayRpnX
+        delayTenthsOfSecondsM 30
+
+        ; Simulate key 0 (= "1") hit...
+        ldi rKey, 0
+        rcall dispatchKey
+        nop
+        delayTenthsOfSecondsM 30
+
+        ; Simulate key 1 (= "2") hit...
+        ldi rKey, 1
+        rcall dispatchKey
+        nop
+        delayTenthsOfSecondsM 30
+
+        ; Simulate key 14 (= "Enter") hit...
+        ldi rKey, 14
+        rcall dispatchKey
+        nop
+        delayTenthsOfSecondsM 50
+
+        ldi rArgByte0, BYTE1( 0x7fffffff )
+        ldi rArgByte1, BYTE2( 0x7fffffff )
+        ldi rArgByte2, BYTE3( 0x7fffffff )
+        ldi rArgByte3, BYTE4( 0x7fffffff )
+        push rArgByte0
+        push rArgByte1
+        push rArgByte2
+        push rArgByte3
+        moveArgByteToRpnY
+        rcall displayRpnY
+        delayTenthsOfSecondsM 50
+        nop
+
+        pop rArgByte3
+        pop rArgByte2
+        pop rArgByte1
+        pop rArgByte0
+        moveArgByteToRpnX
+        rcall displayRpnX
+        delayTenthsOfSecondsM 50
+        nop
+
+        rcall doPlusKey
+        delayTenthsOfSecondsM 50
+        nop
+
+        testLoop:
+;            rjmp testLoop
+
+        rcall clearRpnStack
+        clr rState
+        rcall displayRpnY
+        rcall displayRpnX
+        sbi pRedLedPort, pRedLedPortBit
+        delayTenthsOfSecondsM 100
+        cbi pRedLedPort, pRedLedPortBit
+
+; END TEST CODE
+
     mainLoop:
         ; Look for rows to go low
         in rTmp1, pRowPin

@@ -1291,6 +1291,7 @@ doPlusKey:
 
     moveRpnXToScratch
     rcall dropRpnStack
+    rcall displayRpnY
     moveRpnXToArgBtye
 
     add rArgByte0, rScratch0
@@ -1331,6 +1332,7 @@ doMinusKey:
 
     moveRpnXToScratch
     rcall dropRpnStack
+    rcall displayRpnY
     moveRpnXToArgBtye
 
     mov rTmp1, rArgByte3                        ; Save so we can get sign if needed

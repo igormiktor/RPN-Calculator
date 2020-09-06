@@ -251,9 +251,11 @@
 
 .def rState                         = r19       ; State of operation
 .equ kDigitEntryBit                 = 0x01      ; Bit 0 set = digit entry mode; clear = not digit entry mode
-.equ kDigitEntryBitNbr              = 0         ; Bit number 0
+.equ kDigitEntryBitNbr              = 0         ; Number entry = Bit number 0
 .equ kPriorEnterBit                 = 0x02      ; Bit 1 set = Enter key hit immediately prior
-.equ kPriorEnterBitNbr              = 1         ; Bit number 1
+.equ kPriorEnterBitNbr              = 1         ; Enter key hit = Bit number 1
+.equ kOverflowBit                   = 0x04      ; Bit 2 set = overflow occurred in prior op
+.equ kOverflowBitNbr                = 2         ; Overflow = Bit number 2
 
 .def rLcdArg0                       = r20       ; LCD related argument #0
 .def rLcdArg1                       = r21       ; LCD related argument #1
@@ -725,6 +727,33 @@
 ; **********************************
 
 ; Arguments:  None
+.macro setOverflowCondition
+
+    sbr rState, kOverflowBit                    ; Set the overflow flag
+    turnOnRedLed
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro clearOverflowCondition
+
+    cbr rState, kOverflowBit                    ; Clar the overflow flag
+    turnOffRedLed
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
 .macro loadArgByteMaxPosValue
 
     ldi rArgByte0, 0xff
@@ -1178,6 +1207,7 @@ doKeyHit:
 
     rcall scanKeyPad
     delayMilliSecondsM 200                      ; Delay for button de-bounce
+    clearOverflowCondition                      ; Any key hit clears overflow
     rcall dispatchKey
     ret
 
@@ -1471,6 +1501,7 @@ endNumberEntryMode:
 
 doOverflow:
     ; Prepare the LCD display
+    setOverflowCondition                        ; Turns on red LED
     setLcdRowColM 1, 0
     displayMsgOnLcdM sOverflowMsg
     ret

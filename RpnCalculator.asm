@@ -1659,7 +1659,7 @@ setLcdRowCol:
     subi rLcdArg1, -kLcdSecondRowOffset         ; Add the offset for second row to column
 NoOffsetRequired:
     ori rLcdArg1, kLcdSetDdramAddr              ; Incorporate the command itself
-    mov rLcdArg0, rArgByte1                     ; Move the cmd to rLcdArg0
+    mov rLcdArg0, rLcdArg1                      ; Move the cmd to rLcdArg0
     rcall sendCmdToLcd
 
     ret

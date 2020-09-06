@@ -382,7 +382,7 @@
 ; Arguments:  none
 .macro clearLcd
 
-    ldi rArgByte0, kLcdClearDisplay
+    ldi rLcdArg0, kLcdClearDisplay
     rcall sendCmdToLcd
 
 .endm

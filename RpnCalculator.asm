@@ -597,6 +597,23 @@
 ; **********************************
 
 ; Arguments:  None
+.macro moveArgByteToRpnY
+
+    ldiw Z, sRpnY
+    st Z+, rArgByte0
+    st Z+, rArgByte1
+    st Z+, rArgByte2
+    st Z+, rArgByte3
+
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
 .macro moveRpnXToScratch
 
     ldiw Z, sRpnX

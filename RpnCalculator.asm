@@ -912,6 +912,7 @@ main:
     displayMsgOnLcdM sLcdGreeting
 
     rcall clearRpnStack
+    clr rState
 
     ; Configure the keypad to accept inputs
     rcall configureKeypad

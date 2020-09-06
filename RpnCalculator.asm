@@ -1583,6 +1583,11 @@ write4BitsToLcd:
     ; rLcdArg0 = the 4-bits to write to the LCD in lower nibble (modified)
     ; rTmp1 used as a temporary register
 
+    ; Protect rDelayUsH:rDelayUsL (a.k.a. rArgByte3:rArgByte2)
+
+    push rDelayUsL
+    push rDelayUsH
+
     ; First write the pins with the 4-bit value;
     ; The 4 pins are on the lower nibble of a single PORT
     andi rLcdArg0, 0x0F                         ; Mask out just the lower nibble
@@ -1598,6 +1603,9 @@ write4BitsToLcd:
     delayMicroSecondsM 2                        ; Enable pulse must be > 450ns
     cbi pLcdEnablePort, pLcdEnablePortBit       ; Enable pin LOW
     delayMicroSecondsM 100                      ; Seems like a lot but didn't work with 70us... Command needs > 37us to settle
+
+    pop rDelayUsH
+    pop rDelayUsL
 
     ret
 

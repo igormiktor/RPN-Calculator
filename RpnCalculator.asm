@@ -1563,7 +1563,6 @@ multiplyRpnXandY_XisPositive:
 multiplyRpnXandY_YisPositive:
     rcall dropRpnStack                          ; Both RPN X and Y are extracted, drop the stack
 
-
     ; Do the multiplication
 
     ; Index sum = 0
@@ -1775,7 +1774,7 @@ convertDwordToAscStr:
     ; Z                     = working register (changed)
 
     push rArgByte0                      ; Save the number
-	push rArgByte1
+    push rArgByte1
     push rArgByte2
     push rArgByte3
 

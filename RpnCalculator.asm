@@ -1270,6 +1270,39 @@ doMinusKey_OverflowFinish:
 ;  S U B R O U T I N E
 ; **********************************
 
+doMultiplyKey:
+
+    clearEnterKeyHitFlag
+    rcall endNumberEntryMode
+
+    rcall multiplyRpnXandY                      ; Do the multiplication
+    brts doMultiplyKey_Overflow                 ; Branch if multiplication overflow
+
+    rcall displayRpnY                           ; RPN X and Y have the right values, display
+    rcall displayRpnX
+    ret
+
+doMultiplyKey_Overflow:                         ; Sign of overflow determined bit 0 of rTmp2 (set -> negative)
+    sbrc rTmp2, 0                               ; Skip next if it is a positive overflow
+    rjmp doMultiplyKey_OverflowNeg              ; Negative overflow, so jmp...
+
+    loadArgByteMaxPosValue
+    rjmp doMinusKey_OverflowFinish
+
+doMultiplyKey_OverflowNeg:
+    loadArgByteMaxNegValue
+
+doMultiplyKey_OverflowFinish:
+    moveArgByteToRpnX                           ; Update RPN X
+    rcall doOverflow
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
 beginNumberEntryMode:
 
     sbr rState, kDigitEntryBit                  ; Set that we are in number entry mode
@@ -2176,7 +2209,7 @@ doKey2:
 
 doKey3:
     ldi rTmp2, '/'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
+    setLcdRowColM 1, 0                          ; Display the key hit second row, first column
     sendDataToLcdMR rTmp2
     ret
 
@@ -2220,9 +2253,7 @@ doKey6:
 ; **********************************
 
 doKey7:
-    ldi rTmp2, 'x'
-    setLcdRowColM 1, 14                         ; Display the key hit second row, second-to-last column
-    sendDataToLcdMR rTmp2
+    rcall doMultiplyKey
     ret
 
 

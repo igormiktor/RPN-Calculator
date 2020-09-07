@@ -245,12 +245,21 @@
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+.def rProd0                         = r2        ; Used to store product of DWORD multiplication
+.def rProd1                         = r3        ; Used to store product of DWORD multiplication
+.def rProd2                         = r4        ; Used to store product of DWORD multiplication
+
 .def rDisplayTmp                    = r5        ; Used as temporary in low-level LCD related routines
+.def rProd3                         = r5        ; Used to store product of DWORD multiplication
 
 .def rScratch0                      = r6        ; Scratch (low) register
+.def rProd4                         = r6        ; Used to store product of DWORD multiplication
 .def rScratch1                      = r7        ; Scratch (low) register
+.def rProd5                         = r7        ; Used to store product of DWORD multiplication
 .def rScratch2                      = r8        ; Scratch (low) register
+.def rProd6                         = r8        ; Used to store product of DWORD multiplication
 .def rScratch3                      = r9        ; Scratch (low) register
+.def rProd7                         = r9        ; Used to store product of DWORD multiplication
 
 .def rNbrByte0                      = r10       ; Assemble a 16 bit number from keypad entry here
 .def rNbrByte1                      = r11       ; Assemble a 16 bit number from keypad entry here
@@ -258,6 +267,7 @@
 .def rNbrByte3                      = r13       ; Assemble a 16 bit number from keypad entry here
 
 .def rLoop1                         = r14       ; Loop counter
+.def rZero                          = r14       ; Used to store 0
 
 .def rSREG                          = r15       ; Save/Restore status port
 
@@ -1491,6 +1501,185 @@ dropRpnStack_T2Z:
 ;
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+;
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+multiplyRpnXandY:
+
+; Multiple two signed DWORD numbers from RPN X and Y in the RPN stack
+
+; Registers rNbrByte3:rNbrByte0 and rArgByte3:rArgByte0 used as multiplicands and
+; results is temporarily stored in rProd7:rProd0.
+
+; If no overflow, T flag is clear and product stored in RPN X
+; If overflow, T flag is set and rTmp2 bit 0 indicates a negative product if set
+; In all cases, stack is dropped
+
+;   rNbrByte3:rNbrByte0     = used
+;   rArgByte3:rArgByte0     = used
+;   rProd7:rProd0           = used
+;   r1:r0                   = used
+;   rTmp1                   = used 
+;   rTmp2                   = used (to store sign and return sign in bit 0; set = negative product)
+;   rZero                   = used (to store 0)
+
+    ; Keep track of the sign of the numbers we download, store in rTmp2
+    clr rTmp2
+    clr rZero
+
+    clr rProd0
+    clr rProd1
+    clr rProd2
+    clr rProd3
+    clr rProd4
+    clr rProd5
+    clr rProd6
+    clr rProd7
+
+    ; Deal with X
+    moveRpnXToArgBtye
+    sbrs rArgByte3, kSignBitNbr                 ; Skip next if it is negative
+    rjmp multiplyRpnXandY_XisPositive
+                                                ; Got a negative number
+    subi rTmp2, -1                              ; Add 1 to rTmp2
+    rcall doDword2sComplement                   ; Make the number positive
+
+multiplyRpnXandY_XisPositive:
+    moveArgByteToNbrByte                        ; Move it to rNbrByte3:rNbrByte0
+
+    ; Deal with Y
+    moveRpnYToArgBtye
+    sbrs rArgByte3, kSignBitNbr                 ; Skip next if it is negative
+    rjmp multiplyRpnXandY_YisPositive
+                                                ; Got a negative number
+    subi rTmp2, -1                              ; Add 1 to rTmp2
+    rcall doDword2sComplement                   ; Make the number positive
+
+multiplyRpnXandY_YisPositive:
+    rcall dropRpnStack                          ; Both RPN X and Y are extracted, drop the stack
+
+
+    ; Do the multiplication
+
+    ; Index sum = 0
+    mul rArgByte0, rNbrByte0
+    movw rProd0, r0
+
+    ; Index sum = 6
+    mul rArgByte3, rNbrByte3
+    movw rProd6, r0                             ; Could stop here if we have overflow...
+
+    ; Index sum = 1
+    mul rArgByte1, rNbrByte0
+    add rProd1, r0
+    adc rProd2, r1
+    adc rProd3, rZero
+
+    mul rArgByte0, rNbrByte1
+    add rProd1, r0
+    adc rProd2, r1
+    adc rProd3, rZero
+
+    ; Index sum = 2
+    mul rArgByte2, rNbrByte0
+    add rProd2, r0
+    add rProd3, r1
+    add rProd4, rZero
+
+    mul rArgByte1, rNbrByte1
+    add rProd2, r0
+    add rProd3, r1
+    add rProd4, rZero
+
+    mul rArgByte0, rNbrByte2
+    add rProd2, r0
+    add rProd3, r1
+    add rProd4, rZero
+
+    ; Index sum = 3
+    mul rArgByte3, rNbrByte0
+    add rProd3, r0
+    adc rProd4, r1
+    adc rProd5, rZero
+
+    mul rArgByte2, rNbrByte1
+    add rProd3, r0
+    adc rProd4, r1
+    adc rProd5, rZero
+
+    mul rArgByte1, rNbrByte2
+    add rProd3, r0
+    adc rProd4, r1
+    adc rProd5, rZero
+
+    mul rArgByte0, rNbrByte3
+    add rProd3, r0
+    adc rProd4, r1
+    adc rProd5, rZero
+
+    ; Index sum = 4
+    mul rArgByte3, rNbrByte1
+    add rProd4, r0
+    adc rProd5, r1
+    adc rProd6, rZero
+
+    mul rArgByte2, rNbrByte2
+    add rProd4, r0
+    adc rProd5, r1
+    adc rProd6, rZero
+
+    mul rArgByte1, rNbrByte3
+    add rProd4, r0
+    adc rProd5, r1
+    adc rProd6, rZero
+
+    ; Index sum = 5
+    mul rArgByte3, rNbrByte2
+    add rProd5, r0
+    adc rProd6, r1
+    adc rProd7, rZero
+
+    mul rArgByte2, rNbrByte3
+    add rProd5, r0
+    adc rProd6, r1
+    adc rProd7, rZero
+
+    ; Check for Overflow
+    tst rProd7
+    brne multiplyRpnXandY_Overflow
+    tst rProd6
+    brne multiplyRpnXandY_Overflow
+    tst rProd5
+    brne multiplyRpnXandY_Overflow
+    tst rProd4
+    brne multiplyRpnXandY_Overflow
+
+    ldi rTmp1, 0x7f                             ; Max positive
+    cp rTmp1, rProd3
+    brlo multiplyRpnXandY_Overflow
+
+    ; No overflow...
+    clt                                         ; To indicate no overflow
+    mov rArgByte0, rProd0
+    mov rArgByte1, rProd1
+    mov rArgByte2, rProd2
+    mov rArgByte3, rProd3
+
+    sbrc rTmp2, 0                               ; If bit 0 of rTmp2 is clear, result is positive
+    rcall doDword2sComplement                   ; Product should be negative, make it so
+
+multiplyRpnXandY_Done:
+    moveArgByteToRpnX
+    ret
+
+multiplyRpnXandY_Overflow:
+    set                                         ; To indicate an overflow
+    ret
+
 
 
 ; **********************************

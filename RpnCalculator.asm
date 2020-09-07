@@ -597,7 +597,7 @@
 ; **********************************
 
 ; Arguments:  None
-.macro moveEntryNbrToArgByte
+.macro moveNbrByteToArgByte
 
     mov rArgByte0, rNbrByte0
     mov rArgByte1, rNbrByte1
@@ -613,7 +613,7 @@
 ; **********************************
 
 ; Arguments:  None
-.macro moveArgByteToEntryNbr
+.macro moveArgByteToNbrByte
 
     mov rNbrByte0, rArgByte0
     mov rNbrByte1, rArgByte1
@@ -1136,9 +1136,9 @@ doChangeSignKey:
     sbrs rState, kDigitEntryBitNbr              ; Skip next if we are in number entry mode
     rjmp doChangeSignKey_NotEnteringNumber      ; Not number entry mode, so jmp...
 
-    moveEntryNbrToArgByte                       ; Skip to here, so entering a number: negate it
+    moveNbrByteToArgByte                        ; Skip to here, so entering a number: negate it
     rcall doDword2sComplement
-    moveArgByteToEntryNbr
+    moveArgByteToNbrByte
     setLcdRowColM 1, 0
     rcall displayArgByte
     ret
@@ -1316,7 +1316,7 @@ doOverflow:
 displayEntryNbr:
     ; Move the entry number to display routine argument
     setLcdRowColM 1, 0                  ; Uses rArgByte0 & rArgByte1
-    moveEntryNbrToArgByte
+    moveNbrByteToArgByte
 
 displayArgByte:
     ; Convert the number to decimal ASCII string and display

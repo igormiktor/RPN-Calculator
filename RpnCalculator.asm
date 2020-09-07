@@ -1290,7 +1290,7 @@ endNumberEntryMode:
     cbr rState, kDigitEntryBit                  ; Clear number entry mode state
     turnOffGreenLed
     moveEntryNbrToRpnX
-    rcall displayRpnX                           ; In case of prior overflow
+    rcall displayRpnX                           ; Always display RPN X (might have been a prior overflow)
 
     ret
 
@@ -1301,9 +1301,9 @@ endNumberEntryMode:
 ; **********************************
 
 doOverflow:
-    ; Prepare the LCD display
+
     setOverflowCondition                        ; Turns on red LED
-    setLcdRowColM 1, 0
+    setLcdRowColM 1, 0                          ; Display the overflow msg
     displayMsgOnLcdM sOverflowMsg
     ret
 
@@ -1503,7 +1503,6 @@ dropRpnStack_T2Z:
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-;
 ; **********************************
 ;  S U B R O U T I N E
 ; **********************************

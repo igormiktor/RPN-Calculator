@@ -1523,12 +1523,13 @@ multiplyRpnXandY:
 ;   rArgByte3:rArgByte0     = used
 ;   rProd7:rProd0           = used
 ;   r1:r0                   = used
-;   rTmp1                   = used 
+;   rTmp1                   = used
 ;   rTmp2                   = used (to store sign and return sign in bit 0; set = negative product)
 ;   rZero                   = used (to store 0)
+;   T flag                  = used (set = overflow; clear = no overflow)
 
-    ; Keep track of the sign of the numbers we download, store in rTmp2
-    clr rTmp2
+    clt                                         ; Clear T flag (no overflow)
+    clr rTmp2                                   ; Bit 0 set indicates a negative product or overflow
     clr rZero
 
     clr rProd0
@@ -1663,7 +1664,6 @@ multiplyRpnXandY_YisPositive:
     brlo multiplyRpnXandY_Overflow
 
     ; No overflow...
-    clt                                         ; To indicate no overflow
     mov rArgByte0, rProd0
     mov rArgByte1, rProd1
     mov rArgByte2, rProd2

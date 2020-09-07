@@ -284,6 +284,8 @@
 .equ kPriorEnterBitNbr              = 1         ; Enter key hit = Bit number 1
 .equ kOverflowBit                   = 0x04      ; Bit 2 set = overflow occurred in prior op
 .equ kOverflowBitNbr                = 2         ; Overflow = Bit number 2
+.equ kOverflowSignBit               = 0x08      ; Bit 3 set = overflow has a negative sign
+.equ kOverflowSignBitNbr            = 3         ; Overflow sign = Bit number 3
 
 .def rLcdArg0                       = r20       ; LCD related argument #0
 .def rLcdArg1                       = r21       ; LCD related argument #1
@@ -781,7 +783,7 @@
 ; Arguments:  None
 .macro clearOverflowCondition
 
-    cbr rState, kOverflowBit                    ; Clar the overflow flag
+    cbr rState, kOverflowBit                    ; Clear the overflow flag
     turnOffRedLed
 
 .endm
@@ -1282,8 +1284,8 @@ doMultiplyKey:
     rcall displayRpnX
     ret
 
-doMultiplyKey_Overflow:                         ; Sign of overflow determined bit 0 of rTmp2 (set -> negative)
-    sbrc rTmp2, 0                               ; Skip next if it is a positive overflow
+doMultiplyKey_Overflow:
+    sbrc rState, kOverflowSignBitNbr            ; If kOverflowSignBit of rState is clear, result is positive so skip next
     rjmp doMultiplyKey_OverflowNeg              ; Negative overflow, so jmp...
 
     loadArgByteMaxPosValue
@@ -1548,20 +1550,21 @@ multiplyRpnXandY:
 ; results is temporarily stored in rProd7:rProd0.
 
 ; If no overflow, T flag is clear and product stored in RPN X
-; If overflow, T flag is set and rTmp2 bit 0 indicates a negative product if set
+; If overflow, T flag is set and rState kOverflowSignBit indicates a negative product if set
 ; In all cases, stack is dropped
 
 ;   rNbrByte3:rNbrByte0     = used
 ;   rArgByte3:rArgByte0     = used
 ;   rProd7:rProd0           = used
-;   r1:r0                   = used
+;   r1:r0                   = used (mul instruction outputs to r1:r0)
 ;   rTmp1                   = used
-;   rTmp2                   = used (to store sign and return sign in bit 0; set = negative product)
 ;   rZero                   = used (to store 0)
 ;   T flag                  = used (set = overflow; clear = no overflow)
+;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
 
     clt                                         ; Clear T flag (no overflow)
-    clr rTmp2                                   ; Bit 0 set indicates a negative product or overflow
+    cbr rState, kOverflowSignBit                ; Clear the overflow sign bit (presume positive product)
+    ldi rTmp1, kOverflowSignBit                 ; Need this for toggling the sign bit
     clr rZero
 
     clr rProd0
@@ -1577,8 +1580,8 @@ multiplyRpnXandY:
     moveRpnXToArgBtye
     sbrs rArgByte3, kSignBitNbr                 ; Skip next if it is negative
     rjmp multiplyRpnXandY_XisPositive
-                                                ; Got a negative number
-    subi rTmp2, -1                              ; Add 1 to rTmp2
+
+    eor rState, rTmp1                           ; Got a negative number, toggle the rState kOverflowSignBit
     rcall doDword2sComplement                   ; Make the number positive
 
 multiplyRpnXandY_XisPositive:
@@ -1588,14 +1591,14 @@ multiplyRpnXandY_XisPositive:
     moveRpnYToArgBtye
     sbrs rArgByte3, kSignBitNbr                 ; Skip next if it is negative
     rjmp multiplyRpnXandY_YisPositive
-                                                ; Got a negative number
-    subi rTmp2, -1                              ; Add 1 to rTmp2
+
+    eor rState, rTmp1                           ; Got a negative number, toggle the rState kOverflowSignBit
     rcall doDword2sComplement                   ; Make the number positive
 
 multiplyRpnXandY_YisPositive:
     rcall dropRpnStack                          ; Both RPN X and Y are extracted, drop the stack
 
-    ; Do the multiplication
+    ; Do the multiplication (both factors are positive and rState kOverflowSignBit has the sign of product)
 
     ; Index sum = 0
     mul rArgByte0, rNbrByte0
@@ -1603,7 +1606,7 @@ multiplyRpnXandY_YisPositive:
 
     ; Index sum = 6
     mul rArgByte3, rNbrByte3
-    movw rProd6, r0                             ; Could stop here if we have overflow...
+    movw rProd6, r0
 
     ; Index sum = 1
     mul rArgByte1, rNbrByte0
@@ -1690,7 +1693,7 @@ multiplyRpnXandY_YisPositive:
     tst rProd4
     brne multiplyRpnXandY_Overflow
 
-    ldi rTmp1, 0x7f                             ; Max positive
+    ldi rTmp1, 0x7f                             ; Max positive byte
     cp rTmp1, rProd3
     brlo multiplyRpnXandY_Overflow
 
@@ -1700,7 +1703,7 @@ multiplyRpnXandY_YisPositive:
     mov rArgByte2, rProd2
     mov rArgByte3, rProd3
 
-    sbrc rTmp2, 0                               ; If bit 0 of rTmp2 is clear, result is positive
+    sbrc rState, kOverflowSignBitNbr            ; If bit 0 of rTmp2 is clear, result is positive so skip next
     rcall doDword2sComplement                   ; Product should be negative, make it so
 
 multiplyRpnXandY_Done:
@@ -1719,19 +1722,19 @@ multiplyRpnXandY_Overflow:
 
 multiplyBy10:
 
-; Multiple a DWORD number by 10 using doubling and repeated additions
+    ; Multiple a DWORD number by 10 using doubling and repeated additions
 
-; Registers rNbrByte3:rNbrByte0 passed in as arguments and returned (changed)
+    ; Registers rNbrByte3:rNbrByte0 passed in as arguments and returned (changed)
 
-;   rNbrByte3:rNbrByte0     = input & output
-;   rTmp1                   = used
+    ;   rNbrByte3:rNbrByte0     = input & output
+    ;   rTmp1                   = used
 
-; Sequence is:
-;   - double the number (x2)
-;   - store double number on the stack
-;   - double the number a second time (x4)
-;   - double the number a third time (x8)
-;   - add the doubled number from the stack (net x10)
+    ; Sequence is:
+    ;   - double the number (x2)
+    ;   - store double number on the stack
+    ;   - double the number a second time (x4)
+    ;   - double the number a third time (x8)
+    ;   - add the doubled number from the stack (net x10)
 
     multiplyNbrBy2
     brvs multiplyBy10_Overflow

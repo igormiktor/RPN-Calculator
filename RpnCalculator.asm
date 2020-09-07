@@ -1587,18 +1587,18 @@ multiplyRpnXandY_YisPositive:
     ; Index sum = 2
     mul rArgByte2, rNbrByte0
     add rProd2, r0
-    add rProd3, r1
-    add rProd4, rZero
+    adc rProd3, r1
+    adc rProd4, rZero
 
     mul rArgByte1, rNbrByte1
     add rProd2, r0
-    add rProd3, r1
-    add rProd4, rZero
+    adc rProd3, r1
+    adc rProd4, rZero
 
     mul rArgByte0, rNbrByte2
     add rProd2, r0
-    add rProd3, r1
-    add rProd4, rZero
+    adc rProd3, r1
+    adc rProd4, rZero
 
     ; Index sum = 3
     mul rArgByte3, rNbrByte0

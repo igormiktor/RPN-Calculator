@@ -1117,7 +1117,7 @@ doNumericKey_PriorEnter:
 
 doNumericKey_Continuing:                        ; We are adding another digit to an on-going entry
     rcall multiplyBy10                          ; Multiply the existing number by 10 to incorporate a new digit
-    brvs doNumericKey_Overflow
+    brts doNumericKey_Overflow                  ; T flag is set if we had an overflow
 
     add rNbrByte0, rKey                         ; Add the current digit
     clr rKey                                    ; Doesn't affect carry flag
@@ -1130,7 +1130,7 @@ doNumericKey_Continuing:                        ; We are adding another digit to
     ret
 
 doNumericKey_Overflow:
-    rcall doOverflow
+    rcall doOverflowDisplay                     ; Do a stripped-down version of overflow (only display portion)
     clearEntryNbr                               ; Discard the number but stay in input mode
     ret
 
@@ -1191,20 +1191,11 @@ doPlusKey:
     clearEnterKeyHitFlag
     rcall endNumberEntryMode
 
-    moveRpnXToScratch
-    rcall dropRpnStack
-    rcall displayRpnY
-    moveRpnXToArgBtye
+    rcall addRpnXandY                           ; Do the addition
+    brts doPlusKey_Overflow                     ; Branch if overflow
 
-    add rArgByte0, rScratch0
-    adc rArgByte1, rScratch1
-    adc rArgByte2, rScratch2
-    adc rArgByte3, rScratch3
-    brvs doPlusKey_Overflow
-
-    moveArgByteToRpnX
-    setLcdRowColM 1, 0
-    rcall displayArgByte
+    rcall displayRpnY                           ; RPN X and Y have the right values, display
+    rcall displayRpnX
     ret
 
 doPlusKey_Overflow:                             ; Sign of overflow determined by sign of rScratch or original rArgByte
@@ -1251,20 +1242,25 @@ doMinusKey:
     rcall displayArgByte
     ret
 
-doMinusKey_Overflow:                            ; Sign of overflow determined by sign of of rScratch or original rArgByte
-    sbrc rScratch3, kSignBitNbr                 ; Skip next if it is a positive overflow
-    rjmp doMinusKey_OverflowNeg                 ; Negative overflow, so jmp...
-
-    loadArgByteMaxPosValue
-    rjmp doMinusKey_OverflowFinish
-
-doMinusKey_OverflowNeg:
-    loadArgByteMaxNegValue
-
-doMinusKey_OverflowFinish:
-    moveArgByteToRpnX
+doMinusKey_Overflow:
     rcall doOverflow
     ret
+
+
+;                        ; Sign of overflow determined by sign of of rScratch or original rArgByte
+;    sbrc rScratch3, kSignBitNbr                 ; Skip next if it is a positive overflow
+;    rjmp doMinusKey_OverflowNeg                 ; Negative overflow, so jmp...
+;
+;    loadArgByteMaxPosValue
+;    rjmp doMinusKey_OverflowFinish
+;
+;doMinusKey_OverflowNeg:
+;    loadArgByteMaxNegValue
+;
+;doMinusKey_OverflowFinish:
+;    moveArgByteToRpnX
+;    rcall doOverflow
+;    ret
 
 
 
@@ -1285,19 +1281,22 @@ doMultiplyKey:
     ret
 
 doMultiplyKey_Overflow:
-    sbrc rState, kOverflowSignBitNbr            ; If kOverflowSignBit of rState is clear, result is positive so skip next
-    rjmp doMultiplyKey_OverflowNeg              ; Negative overflow, so jmp...
-
-    loadArgByteMaxPosValue
-    rjmp doMinusKey_OverflowFinish
-
-doMultiplyKey_OverflowNeg:
-    loadArgByteMaxNegValue
-
-doMultiplyKey_OverflowFinish:
-    moveArgByteToRpnX                           ; Update RPN X
     rcall doOverflow
     ret
+
+;    sbrc rState, kOverflowSignBitNbr            ; If kOverflowSignBit of rState is clear, result is positive so skip next
+;    rjmp doMultiplyKey_OverflowNeg              ; Negative overflow, so jmp...
+;
+;    loadArgByteMaxPosValue
+;    rjmp doMinusKey_OverflowFinish
+;
+;doMultiplyKey_OverflowNeg:
+;    loadArgByteMaxNegValue
+;
+;doMultiplyKey_OverflowFinish:
+;    moveArgByteToRpnX                           ; Update RPN X
+;    rcall doOverflow
+;    ret
 
 
 
@@ -1337,11 +1336,24 @@ endNumberEntryMode:
 
 doOverflow:
 
+    sbrc rState, kOverflowSignBitNbr            ; If kOverflowSignBit of rState is clear, result is positive so skip next
+    rjmp doOverflow_Negative                    ; Negative overflow, so jmp...
+
+    loadArgByteMaxPosValue
+    rjmp doOverflow_Finish
+
+doOverflow_Negative:
+    loadArgByteMaxNegValue
+
+doOverflow_Finish:
+    moveArgByteToRpnX                           ; Update RPN X
+    rcall displayRpnY                           ; Update the display of RPN Y
+
+doOverflowDisplay:                              ; Entry point for doNumericKey on overflow
     setOverflowCondition                        ; Turns on red LED
-    setLcdRowColM 1, 0                          ; Display the overflow msg
+    setLcdRowColM 1, 0                          ; Display the overflow msg instead of RPN X
     displayMsgOnLcdM sOverflowMsg
     ret
-
 
 
 
@@ -1542,9 +1554,108 @@ dropRpnStack_T2Z:
 ;  S U B R O U T I N E
 ; **********************************
 
+addRpnXandY:
+
+; Add two signed DWORD numbers from RPN X and Y in the RPN stack
+
+; Registers rScratch3:rScratch0 and rArgByte3:rArgByte0 used as summands and
+; result is stored in rArgByte3:rArgByte0.
+
+; If no overflow, T flag is clear and product stored in RPN X
+; If overflow, T flag is set and rState kOverflowSignBit indicates a negative overflow if set
+; In all cases, stack is dropped
+
+;   rNbrByte3:rNbrByte0     = used
+;   rArgByte3:rArgByte0     = used
+;   rTmp1                   = used
+;   T flag                  = used (set = overflow; clear = no overflow)
+;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
+
+    clt                                         ; Clear T flag (no overflow)
+    cbr rState, kOverflowSignBit                ; Clear the overflow sign bit (presume positive product)
+    ldi rTmp1, kOverflowSignBit                 ; Need this for toggling the sign bit
+    clr rZero
+
+    moveRpnXToScratch
+    rcall dropRpnStack
+    moveRpnXToArgBtye
+
+    add rArgByte0, rScratch0
+    adc rArgByte1, rScratch1
+    adc rArgByte2, rScratch2
+    adc rArgByte3, rScratch3
+
+    brvs addRpnXandY_Overflow                     ; Check for overflow
+
+    moveArgByteToRpnX
+    ret
+
+addRpnXandY_Overflow:
+    set                                         ; Set T flag to signal overflow
+    sbrc rScratch3, kSignBitNbr                 ; Sign of overflow determined by sign of rScratch or original rArgByte
+    eor rState, rTmp1                           ; Set rState kOverflowSignBit (skipped if rScratch is positive)
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+subtractRpnXfromY:
+
+; Subtract two signed DWORD numbers, RPN Y - RPN X taken from the RPN stack
+
+; Registers rScratch3:rScratch0 and rArgByte3:rArgByte0 used as arguments and
+; result is stored in rArgByte3:rArgByte0.
+
+; If no overflow, T flag is clear and product stored in RPN X
+; If overflow, T flag is set and rState kOverflowSignBit indicates a negative overflow if set
+; In all cases, stack is dropped
+
+;   rNbrByte3:rNbrByte0     = used
+;   rArgByte3:rArgByte0     = used
+;   rTmp1                   = used
+;   T flag                  = used (set = overflow; clear = no overflow)
+;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
+
+    clt                                         ; Clear T flag (no overflow)
+    cbr rState, kOverflowSignBit                ; Clear the overflow sign bit (presume positive product)
+    ldi rTmp1, kOverflowSignBit                 ; Need this for toggling the sign bit
+    clr rZero
+
+    moveRpnXToArgBtye
+    rcall doDword2sComplement
+    moveArgByteToScratch
+    rcall dropRpnStack
+    rcall displayRpnY
+    moveRpnXToArgBtye
+
+    add rArgByte0, rScratch0
+    adc rArgByte1, rScratch1
+    adc rArgByte2, rScratch2
+    adc rArgByte3, rScratch3
+
+    brvs subtractRpnXfromY_Overflow             ; Check for overflow
+
+    moveArgByteToRpnX
+    ret
+
+subtractRpnXfromY_Overflow:
+    set                                         ; Set T flag to signal overflow
+    sbrc rScratch3, kSignBitNbr                 ; Sign of overflow determined by sign of rScratch or original rArgByte
+    eor rState, rTmp1                           ; Set rState kOverflowSignBit (skipped if rScratch is positive)
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
 multiplyRpnXandY:
 
-; Multiple two signed DWORD numbers from RPN X and Y in the RPN stack
+; Multiply two signed DWORD numbers from RPN X and Y in the RPN stack
 
 ; Registers rNbrByte3:rNbrByte0 and rArgByte3:rArgByte0 used as multiplicands and
 ; results is temporarily stored in rProd7:rProd0.
@@ -1736,6 +1847,8 @@ multiplyBy10:
     ;   - double the number a third time (x8)
     ;   - add the doubled number from the stack (net x10)
 
+    clt                                         ; Clear T flag
+
     multiplyNbrBy2
     brvs multiplyBy10_Overflow
 
@@ -1745,9 +1858,9 @@ multiplyBy10:
     push rNbrByte0
 
     multiplyNbrBy2
-    brvs multiplyBy10_Overflow
+    brvs multiplyBy10_Overflow_Pop
     multiplyNbrBy2
-    brvs multiplyBy10_Overflow
+    brvs multiplyBy10_Overflow_Pop
 
     pop rTmp1
     add rNbrByte0, rTmp1
@@ -1761,8 +1874,14 @@ multiplyBy10:
 
     ret
 
-multiplyBy10_Overflow:                          ; TODO think about error handling/propagation
-    rcall doOverflow
+multiplyBy10_Overflow_Pop:
+    pop rTmp1                                   ; Need to pop values off the stack
+    pop rTmp1
+    pop rTmp1
+    pop rTmp1
+
+multiplyBy10_Overflow:
+    set                                         ; Set T flag to indicate overflow
     ret
 
 

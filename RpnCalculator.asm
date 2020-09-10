@@ -326,14 +326,12 @@
 
 ; Arguments:  @0 = tmp reg to use (upper half)
 .macro initializeStack
-
     .ifdef SPH
         ldi @0, High( RAMEND )
         out SPH, @0                             ; Upper byte of stack pointer (always load high-byte first)
     .endif
     ldi @0, Low( RAMEND )
     out SPL, @0                                 ; Lower byte of stack pointer
-
 .endm
 
 
@@ -344,10 +342,8 @@
 
 ; Arguments:  @0 = register base name, @1 = 16-bit constant
 .macro ldiw
-
    ldi @0H, High( @1 )
    ldi @0L, Low( @1 )
-
 .endm
 
 
@@ -358,10 +354,8 @@
 
 ; Arguments:  @0 = register base name to be pushed onto stack (L first, H second)
 .macro pushw
-
    push @0L
    push @0H
-
 .endm
 
 
@@ -372,10 +366,8 @@
 
 ; Arguments:  @0 = register base name to be popped from stack (H first, L second)
 .macro popw
-
    pop @0H
    pop @0L
-
 .endm
 
 
@@ -424,10 +416,8 @@
 
 ; Arguments:  none
 .macro clearLcd
-
     ldi rLcdArg0, kLcdClearDisplay
     rcall sendCmdToLcd
-
 .endm
 
 
@@ -438,11 +428,9 @@
 
 ; Arguments:  @0 = row  (byte), @1 = column (byte)
 .macro setLcdRowColM
-
     ldi rLcdArg0, @0
     ldi rLcdArg1, @1
     rcall setLcdRowCol
-
 .endm
 
 
@@ -453,10 +441,8 @@
 
 ; Arguments:  @0 = LCD command (byte)
 .macro sendCmdToLcdM
-
     ldi rLcdArg0, @0
     rcall sendCmdToLcd
-
 .endm
 
 
@@ -467,10 +453,8 @@
 
 ; Arguments:  @0 = Data to display (byte)
 .macro sendDataToLcdM
-
     ldi rLcdArg0, @0
     rcall sendDataToLcd
-
 .endm
 
 
@@ -481,62 +465,8 @@
 
 ; Arguments:  @0 = Data to display (byte)
 .macro sendDataToLcdMR
-
     mov rLcdArg0, @0
     rcall sendDataToLcd
-
-.endm
-
-
-
-; **********************************
-;  M A C R O
-; **********************************
-
-; Arguments:  none
-.macro turnOnGreenLed
-
-    sbi pGreenLedPort, pGreenLedPortBit
-
-.endm
-
-
-
-; **********************************
-;  M A C R O
-; **********************************
-
-; Arguments:  none
-.macro turnOnRedLed
-
-    sbi pRedLedPort, pRedLedPortBit
-
-.endm
-
-
-
-; **********************************
-;  M A C R O
-; **********************************
-
-; Arguments:  none
-.macro turnOffGreenLed
-
-    cbi pGreenLedPort, pGreenLedPortBit
-
-.endm
-
-
-
-; **********************************
-;  M A C R O
-; **********************************
-
-; Arguments:  none
-.macro turnOffRedLed
-
-    cbi pRedLedPort, pRedLedPortBit
-
 .endm
 
 
@@ -547,10 +477,52 @@
 
 ; Arguments:  @0 = address of 16 bit message to display on LCD
 .macro displayMsgOnLcdM
-
     ldiw Z, @0
     rcall displayMsgOnLcd
+.endm
 
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  none
+.macro turnOnGreenLed
+    sbi pGreenLedPort, pGreenLedPortBit
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  none
+.macro turnOnRedLed
+    sbi pRedLedPort, pRedLedPortBit
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  none
+.macro turnOffGreenLed
+    cbi pGreenLedPort, pGreenLedPortBit
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  none
+.macro turnOffRedLed
+    cbi pRedLedPort, pRedLedPortBit
 .endm
 
 
@@ -561,12 +533,10 @@
 
 ; Arguments:  None (doubles rNbrByte3:rNbrByte0)
 .macro multiplyNbrBy2
-
     lsl rNbrByte0
     rol rNbrByte1
     rol rNbrByte2
     rol rNbrByte3
-
 .endm
 
 
@@ -577,12 +547,10 @@
 
 ; Arguments:  None
 .macro clearEntryNbr
-
     clr rNbrByte0
     clr rNbrByte1
     clr rNbrByte2
     clr rNbrByte3
-
 .endm
 
 
@@ -593,13 +561,11 @@
 
 ; Arguments:  None
 .macro moveEntryNbrToRpnX
-
     ldiw Z, sRpnX
     st Z+, rNbrByte0
     st Z+, rNbrByte1
     st Z+, rNbrByte2
     st Z+, rNbrByte3
-
 .endm
 
 
@@ -610,12 +576,10 @@
 
 ; Arguments:  None
 .macro moveNbrByteToArgByte
-
     mov rArgByte0, rNbrByte0
     mov rArgByte1, rNbrByte1
     mov rArgByte2, rNbrByte2
     mov rArgByte3, rNbrByte3
-
 .endm
 
 
@@ -626,12 +590,10 @@
 
 ; Arguments:  None
 .macro moveArgByteToNbrByte
-
     mov rNbrByte0, rArgByte0
     mov rNbrByte1, rArgByte1
     mov rNbrByte2, rArgByte2
     mov rNbrByte3, rArgByte3
-
 .endm
 
 
@@ -642,13 +604,11 @@
 
 ; Arguments:  None
 .macro moveRpnXToArgBtye
-
     ldiw Z, sRpnX
     ld rArgByte0, Z+
     ld rArgByte1, Z+
     ld rArgByte2, Z+
     ld rArgByte3, Z+
-
 .endm
 
 
@@ -659,13 +619,11 @@
 
 ; Arguments:  None
 .macro moveArgByteToRpnX
-
     ldiw Z, sRpnX
     st Z+, rArgByte0
     st Z+, rArgByte1
     st Z+, rArgByte2
     st Z+, rArgByte3
-
 .endm
 
 
@@ -676,13 +634,11 @@
 
 ; Arguments:  None
 .macro moveRpnYToArgBtye
-
     ldiw Z, sRpnY
     ld rArgByte0, Z+
     ld rArgByte1, Z+
     ld rArgByte2, Z+
     ld rArgByte3, Z+
-
 .endm
 
 
@@ -693,13 +649,11 @@
 
 ; Arguments:  None
 .macro moveArgByteToRpnY
-
     ldiw Z, sRpnY
     st Z+, rArgByte0
     st Z+, rArgByte1
     st Z+, rArgByte2
     st Z+, rArgByte3
-
 .endm
 
 
@@ -710,13 +664,11 @@
 
 ; Arguments:  None
 .macro moveRpnXToScratch
-
     ldiw Z, sRpnX
     ld rScratch0, Z+
     ld rScratch1, Z+
     ld rScratch2, Z+
     ld rScratch3, Z+
-
 .endm
 
 
@@ -727,12 +679,10 @@
 
 ; Arguments:  None
 .macro moveArgByteToScratch
-
     mov rScratch0, rArgByte0
     mov rScratch1, rArgByte1
     mov rScratch2, rArgByte2
     mov rScratch3, rArgByte3
-
 .endm
 
 
@@ -743,9 +693,7 @@
 
 ; Arguments:  None
 .macro clearEnterKeyHitFlag
-
     cbr rState, kPriorEnterBit                  ; Clear the Enter key flag
-
 .endm
 
 
@@ -756,9 +704,7 @@
 
 ; Arguments:  None
 .macro setEnterKeyHitFlag
-
     sbr rState, kPriorEnterBit                  ; Set the Enter key flag
-
 .endm
 
 
@@ -769,7 +715,6 @@
 
 ; Arguments:  None
 .macro setOverflowCondition
-
     sbr rState, kOverflowBit                    ; Set the overflow flag
     turnOnRedLed
 .endm
@@ -782,10 +727,8 @@
 
 ; Arguments:  None
 .macro clearOverflowCondition
-
     cbr rState, kOverflowBit                    ; Clear the overflow flag
     turnOffRedLed
-
 .endm
 
 
@@ -796,12 +739,10 @@
 
 ; Arguments:  None
 .macro loadArgByteMaxPosValue
-
     ldi rArgByte0, 0xff
     ldi rArgByte1, 0xff
     ldi rArgByte2, 0xff
     ldi rArgByte3, 0x7f
-
 .endm
 
 
@@ -812,12 +753,10 @@
 
 ; Arguments:  None
 .macro loadArgByteMaxNegValue
-
     ldi rArgByte0, 0x01
     ldi rArgByte1, 0x00
     ldi rArgByte2, 0x00
     ldi rArgByte3, 0x80
-
 .endm
 
 
@@ -1893,6 +1832,7 @@ multiplyBy10_Overflow:
 doDword2sComplement:
 
 ; Convert a DWORD (32-bits, signed) to its 2s complement
+; (Do 1s complement and add 1)
 
 ; Registers rArgByte3:rArgByte0 passed in as arguments
 ; Results returned in rArgByte3:rArgByte0 (conversion done in place)

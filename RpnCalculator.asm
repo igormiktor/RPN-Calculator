@@ -1120,7 +1120,6 @@ doEnterKey:
     rcall displayRpnY
     rcall displayRpnX                           ; May not be displayed (e.g., after overflow)
     setEnterKeyHitFlag
-
     ret
 
 

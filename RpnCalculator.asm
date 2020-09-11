@@ -1194,6 +1194,28 @@ doMultiplyKey_Overflow:
 ;  S U B R O U T I N E
 ; **********************************
 
+doDivideKey:
+
+    clearEnterKeyHitFlag
+    rcall endNumberEntryMode
+
+    rcall divideRpnYbyX                         ; Do the division
+    brts doDivideKey_Overflow                   ; Branch if multiplication overflow
+
+    rcall displayRpnY                           ; RPN X and Y have the right values, display
+    rcall displayRpnX
+    ret
+
+doDivideKey_Overflow:
+    rcall doOverflow
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
 beginNumberEntryMode:
 
     sbr rState, kDigitEntryBit                  ; Set that we are in number entry mode

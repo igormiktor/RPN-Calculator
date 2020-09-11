@@ -1227,20 +1227,6 @@ doMultiplyKey_Overflow:
     rcall doOverflow
     ret
 
-;    sbrc rState, kOverflowSignBitNbr            ; If kOverflowSignBit of rState is clear, result is positive so skip next
-;    rjmp doMultiplyKey_OverflowNeg              ; Negative overflow, so jmp...
-;
-;    loadArgByteMaxPosValue
-;    rjmp doMinusKey_OverflowFinish
-;
-;doMultiplyKey_OverflowNeg:
-;    loadArgByteMaxNegValue
-;
-;doMultiplyKey_OverflowFinish:
-;    moveArgByteToRpnX                           ; Update RPN X
-;    rcall doOverflow
-;    ret
-
 
 
 ; **********************************

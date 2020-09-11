@@ -1757,7 +1757,7 @@ multiplyRpnXandY_YisPositive:
     mov rArgByte2, rProd2
     mov rArgByte3, rProd3
 
-    sbrc rState, kOverflowSignBitNbr            ; If bit 0 of rTmp2 is clear, result is positive so skip next
+    sbrc rState, kOverflowSignBitNbr            ; If rState kOverflowSignBit is clear, result is positive so skip next
     rcall doDword2sComplement                   ; Product should be negative, make it so
 
 multiplyRpnXandY_Done:

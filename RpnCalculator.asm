@@ -1142,17 +1142,6 @@ doPlusKey:
     ret
 
 doPlusKey_Overflow:                             ; Sign of overflow determined by sign of rScratch or original rArgByte
-    sbrc rScratch3, kSignBitNbr                 ; Skip next if it is a positive overflow
-    rjmp doPlusKey_OverflowNeg                  ; Negative overflow, so jmp...
-
-    loadArgByteMaxPosValue
-    rjmp doPlusKey_OverflowFinish
-
-doPlusKey_OverflowNeg:
-    loadArgByteMaxNegValue
-
-doPlusKey_OverflowFinish:
-    moveArgByteToRpnX
     rcall doOverflow
     ret
 

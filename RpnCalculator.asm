@@ -239,18 +239,22 @@
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ;
-;  R E G I S T E R  P O L I C Y
+;  R E G I S T E R    A L L O C A T I O N
 ;
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 .def rProd0                         = r2        ; Used to store product of DWORD multiplication
+.def rRem0                          = r2        ; Used to store quotient of DWORD division
 .def rProd1                         = r3        ; Used to store product of DWORD multiplication
+.def rRem1                          = r3        ; Used to store quotient of DWORD division
 .def rProd2                         = r4        ; Used to store product of DWORD multiplication
+.def rRem2                          = r4        ; Used to store quotient of DWORD division
 
-.def rDisplayTmp                    = r5        ; Used as temporary in low-level LCD related routines
 .def rProd3                         = r5        ; Used to store product of DWORD multiplication
+.def rRem3                          = r5        ; Used to store quotient of DWORD division
+.def rDisplayTmp                    = r5        ; Used as temporary in low-level LCD related routines
 
 .def rScratch0                      = r6        ; Scratch (low) register
 .def rProd4                         = r6        ; Used to store product of DWORD multiplication
@@ -1761,6 +1765,129 @@ multiplyRpnXandY_Done:
     ret
 
 multiplyRpnXandY_Overflow:
+    set                                         ; To indicate an overflow
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+divideRpnYbyX:
+
+; Divide two signed DWORD numbers; RPN Y divided by RPN X from the RPN stack
+
+; Registers rNbrByte3:rNbrByte0 and rArgByte3:rArgByte0 used as divisor and dividend, resp.
+; Qoutient is computed in rArgByte3:rArgByte0 and remainder in rRem3:rRem0
+
+; If no overflow, T flag is clear and quotient stored in RPN X
+; If overflow, T flag is set and rState kOverflowSignBit indicates a negative product if set
+; In all cases, stack is dropped
+
+;   rNbrByte3:rNbrByte0     = used (divisor, denominator)
+;   rArgByte3:rArgByte0     = used (dividend, numerator) and (quotient)
+;   rRem3:rRem0             = used (remainder)
+;   rTmp1                   = used
+;   T flag                  = used (set = overflow; clear = no overflow)
+;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
+
+    clt                                         ; Clear T flag (no overflow)
+    cbr rState, kOverflowSignBit                ; Clear the overflow sign bit (presume positive product)
+    ldi rTmp1, kOverflowSignBit                 ; Need this for toggling the sign bit
+
+    ; Deal with X
+    moveRpnXToArgBtye
+    sbrs rArgByte3, kSignBitNbr                 ; Skip next if it is negative
+    rjmp divideRpnYbyX_XisPositive
+
+    eor rState, rTmp1                           ; Got a negative number, toggle the rState kOverflowSignBit
+    rcall doDword2sComplement                   ; Make the number positive
+
+divideRpnYbyX_XisPositive:
+    moveArgByteToNbrByte                        ; Move it to rNbrByte3:rNbrByte0
+
+    ; Deal with Y
+    moveRpnYToArgBtye
+    sbrs rArgByte3, kSignBitNbr                 ; Skip next if it is negative
+    rjmp divideRpnYbyX_YisPositive
+
+    eor rState, rTmp1                           ; Got a negative number, toggle the rState kOverflowSignBit
+    rcall doDword2sComplement                   ; Make the number positive
+
+divideRpnYbyX_YisPositive:
+    rcall dropRpnStack                          ; Both RPN X and Y are extracted, drop the stack
+
+    ; Check for zero divisor
+    mov rTmp1, rNbrByte0
+    or rTmp1, rNbrByte1
+    or rTmp1, rNbrByte2
+    or rTmp1, rNbrByte3
+    breq divideRpnYbyX_Overflow
+
+    ; Do the division (both numerator and denominator are positive and rState kOverflowSignBit has the sign of quotient)
+
+    clr rRem0                                   ; Clear the remainder
+    clr rRem1
+    clr rRem2
+    sub rRem3, rRem3                            ; Clear both MSB and the carry
+
+    ldi	rTmp1, 33                               ; Init loop counter
+
+divideRpnYbyX_Loop:
+    rol	rArgByte0                               ; Shift dividend left
+    rol	rArgByte1
+    rol	rArgByte2
+    rol	rArgByte3
+    dec	rTmp1                                   ; Decrement loop counter
+    breq divideRpnYbyX_Done                     ; If counter == 0, done
+
+    rol	rRem0                                   ; Shift dividend into remainder
+    rol	rRem1
+    rol	rRem2
+    rol	rRem3
+    sub	rRem0, rNbrByte0                        ; Remainder = Remainder - Divisor
+    sbc	rRem1, rNbrByte1
+    sbc	rRem2, rNbrByte2
+    sbc	rRem3, rNbrByte3
+    brcs divideRpnYbyX_RemNegative              ; Branch if result negative
+
+    sec                                         ; Set carry to be shifted into result
+	rjmp divideRpnYbyX_Loop
+
+divideRpnYbyX_RemNegative:
+    add	rRem0, rNbrByte0                        ; Negative, so restore remainder
+    adc	rRem1, rNbrByte1
+    adc	rRem2, rNbrByte2
+    adc	rRem3, rNbrByte3
+    clc	                                        ; Clear carry that would otherwise be shifted into result
+    rjmp divideRpnYbyX_Loop
+
+divideRpnYbyX_Done:
+    sbrs rState, kOverflowSignBitNbr            ; If rState kOverflowSignBit is set, result is negative so skip next
+    rjmp divideRpnYbyX_QuoPositive
+
+    mov rTmp1, rRem0                            ; Negative quotient, check for remainder
+    or rTmp1, rRem1
+    or rTmp1, rRem2
+    or rTmp1, rRem3
+    breq divideRpnYbyX_QuoNegNoRemainder
+
+    ldi rTmp1, 1                                ; There is remainder, so add 1 (so always quo * divisor + rem = dividend)
+    add rArgByte0, rTmp1                        ; Doesn't affect carry flag
+    clr rTmp1
+    adc rArgByte1, rTmp1
+    adc rArgByte2, rTmp1
+    adc rArgByte3, rTmp1
+
+divideRpnYbyX_QuoNegNoRemainder:
+    rcall doDword2sComplement                   ; Product should be negative, make it so
+
+divideRpnYbyX_QuoPositive:
+    moveArgByteToRpnX
+    ret
+
+divideRpnYbyX_Overflow:
     set                                         ; To indicate an overflow
     ret
 

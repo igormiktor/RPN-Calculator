@@ -2366,9 +2366,7 @@ doKey2:
 ; **********************************
 
 doKey3:
-    ldi rTmp2, '/'
-    setLcdRowColM 1, 0                          ; Display the key hit second row, first column
-    sendDataToLcdMR rTmp2
+    rcall doDivideKey
     ret
 
 

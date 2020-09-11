@@ -1156,22 +1156,11 @@ doMinusKey:
     clearEnterKeyHitFlag
     rcall endNumberEntryMode
 
-    moveRpnXToArgBtye
-    rcall doDword2sComplement
-    moveArgByteToScratch
-    rcall dropRpnStack
-    rcall displayRpnY
-    moveRpnXToArgBtye
+    rcall subtractRpnXfromY                     ; Do the subtraction
+    brts doMinusKey_Overflow                    ; Branch if overflow
 
-    add rArgByte0, rScratch0
-    adc rArgByte1, rScratch1
-    adc rArgByte2, rScratch2
-    adc rArgByte3, rScratch3
-    brvs doMinusKey_Overflow
-
-    moveArgByteToRpnX
-    setLcdRowColM 1, 0
-    rcall displayArgByte
+    rcall displayRpnY                           ; RPN X and Y have the right values, display
+    rcall displayRpnX
     ret
 
 doMinusKey_Overflow:

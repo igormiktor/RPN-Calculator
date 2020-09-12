@@ -1849,6 +1849,15 @@ divideRpnYbyX_Done:
     adc rArgByte2, rTmp1
     adc rArgByte3, rTmp1
 
+    sub rNbrByte0, rRem0                        ; Replace remainder with divisor - remainder to ensure above eqn holds
+    sbc rNbrByte1, rRem1
+    sbc rNbrByte2, rRem2
+    sbc rNbrByte3, rRem3
+    mov rRem0, rNbrByte0
+    mov rRem1, rNbrByte1
+    mov rRem2, rNbrByte2
+    mov rRem3, rNbrByte3
+
 divideRpnYbyX_QuoNegNoRemainder:
     rcall doDword2sComplement                   ; Product should be negative, make it so
 

@@ -1174,7 +1174,7 @@ doChangeSignKey:
     moveNbrByteToArgByte                        ; Skip to here, so entering a number: negate it
     rcall doDword2sComplement
     moveArgByteToNbrByte
-    setLcdRowColM 1, 0
+    setLcdRowColM 1, 1
     rcall displayArgByte
     ret
 
@@ -1182,7 +1182,7 @@ doChangeSignKey_NotEnteringNumber:
     moveRpnXToArgBtye                           ; Not in number entry mode, so negate RPN X
     rcall doDword2sComplement
     moveArgByteToRpnX
-    setLcdRowColM 1, 0
+    setLcdRowColM 1, 1
     rcall displayArgByte
     ret
 

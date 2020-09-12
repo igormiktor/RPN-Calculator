@@ -136,7 +136,7 @@
 
 
 
-; Keypad uses D4-D7 (columns) and B0-3 (rows) an D2 for INT0
+; Keypad uses D4-D7 (columns) and B0-3 (rows)
 
 ; Keypad row pins are Port B pins 0-3
 .equ pRowDirD                       = DDRB
@@ -1056,7 +1056,7 @@ main:
 
     initializeStack rTmp1
 
-    rcall initializeStaticData                  ; Move static data from PROGMEM to SRAM
+    rcall initializeStaticData
 
     ; Start the LCD display
     rcall initializeLcd

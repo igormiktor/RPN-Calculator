@@ -173,9 +173,16 @@
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+; Timer constants
+.equ kTimer1At1Hz                   = 62449     ; "Top" value for 1Hz output with prescalar of 256
+.equ kTimer1At2Hz                   = 31224     ; "Top" value for 2Hz output with prescalar of 256
+
 ; Message and display related lengths
 .equ kDisplayMsgLen                 = 16
-.equ kDecimalDigitsLen              = 5
+.equ kDisplayNbrLen                 = 15
+
+; Watch icon data length
+.equ kWatchIconLen                  = 4*8
 
 ; LCD commands
 .equ kLcdClearDisplay               = 0x01
@@ -282,14 +289,22 @@
 .def rKey                           = r18       ; Index of key hit, used to look-up value in Key Table
 
 .def rState                         = r19       ; State of operation
-.equ kDigitEntryBit                 = 0x01      ; Bit 0 set = digit entry mode; clear = not digit entry mode
-.equ kDigitEntryBitNbr              = 0         ; Number entry = Bit number 0
-.equ kPriorEnterBit                 = 0x02      ; Bit 1 set = Enter key hit immediately prior
-.equ kPriorEnterBitNbr              = 1         ; Enter key hit = Bit number 1
-.equ kOverflowBit                   = 0x04      ; Bit 2 set = overflow occurred in prior op
-.equ kOverflowBitNbr                = 2         ; Overflow = Bit number 2
-.equ kOverflowSignBit               = 0x08      ; Bit 3 set = overflow has a negative sign
-.equ kOverflowSignBitNbr            = 3         ; Overflow sign = Bit number 3
+.equ kIconBit1                      = 0x01      ; Bit 0 is part of the icon counter
+.equ kIconBit1Nbr                   = 0
+.equ kIconBit2                      = 0x02      ; Bit 0 is part of the icon counter
+.equ kIconBit2Nbr                   = 1
+.equ kIconBitMask                   = 0x03      ; Bit mask for Icon counter
+.equ kIconBitAntiMask               = 0xfc      ; Bit mask for opposite of Icon counter
+.equ kDigitEntryBit                 = 0x04      ; Bit 2 set = digit entry mode; clear = not digit entry mode
+.equ kDigitEntryBitNbr              = 2         ; Number entry = Bit number 2
+.equ kPriorEnterBit                 = 0x08      ; Bit 3 set = Enter key hit immediately prior
+.equ kPriorEnterBitNbr              = 3         ; Enter key hit = Bit number 3
+.equ kOverflowBit                   = 0x10      ; Bit 4 set = overflow occurred in prior op
+.equ kOverflowBitNbr                = 4         ; Overflow = Bit number 4
+.equ kOverflowSignBit               = 0x20      ; Bit 5 set = overflow has a negative sign
+.equ kOverflowSignBitNbr            = 5         ; Overflow sign = Bit number 5
+.equ kTimerBit                      = 0x40      ; Bit 6 set = Timer has gone off
+.equ kTimerBitNbr                   = 6         ; Timer gone off = Bit number 6
 
 .def rLcdArg0                       = r20       ; LCD related argument #0
 .def rLcdArg1                       = r21       ; LCD related argument #1
@@ -484,6 +499,19 @@
     ldiw Z, @0
     rcall displayMsgOnLcd
 .endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  @0 = address of 15 bit number string to display on LCD
+.macro displayNbrOnLcdM
+    ldiw Z, @0
+    rcall displayNbrOnLcd
+.endm
+
 
 
 
@@ -696,6 +724,29 @@
 ; **********************************
 
 ; Arguments:  None
+.macro clearTimerFlag
+    cbr rState, kTimerBit                       ; Clear the Timer flag
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
+.macro setTimerFlag
+    sbr rState, kTimerBit                       ; Set the Timer flag
+.endm
+
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Arguments:  None
 .macro clearEnterKeyHitFlag
     cbr rState, kPriorEnterBit                  ; Clear the Enter key flag
 .endm
@@ -792,6 +843,9 @@ sStaticDataBegin:
     sOverflowMsg:
         .byte 16
 
+    sWatchIcons:
+        .byte kWatchIconLen
+
 sStaticDataEnd:
 
 
@@ -841,9 +895,9 @@ sRpnT3:
 ; Working storage for conversion to decimal form for display
 sDisplayNbrStr:
 sLeadingSpaces:
-    .byte 3             ; 3 leading blank spaces
+    .byte 2             ; 2 leading blank spaces
 sAsciiNumberStr:
-    .byte 1
+    .byte 1             ; Used for minus sign (if needed)
 sBcdNumberArray:
     .byte 10
 sTrailingSpaces:
@@ -891,7 +945,7 @@ sTrailingSpaces:
 .org 0x14
 	reti                       ; ICP1
 .org 0x16
-	reti                       ; OC1A
+	rjmp hdlrTIM1_COMPA        ; OC1A
 .org 0x18
 	reti                       ; OC1B
 .org 0x1A
@@ -950,11 +1004,18 @@ dStaticDataBegin:
 .db ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
 
 ; Overflow msg
-.db ' ', 'O', 'v', 'e', 'r', 'f', 'l', 'o', 'w', ' ', ' ', ' ', ' ', ' ', ' ', ' '
+.db ' ', ' ', 'O', 'v', 'e', 'r', 'f', 'l', 'o', 'w', ' ', ' ', ' ', ' ', ' ', ' '
+
+; Watch face icons
+.db 0x00, 0x0e, 0x15, 0x15, 0x11, 0x0e, 0x00, 0x00      ; 12 o'clock
+.db 0x00, 0x0e, 0x15, 0x17, 0x11, 0x0e, 0x00, 0x00      ; 3 o'clock
+.db 0x00, 0x0e, 0x15, 0x15, 0x15, 0x0e, 0x00, 0x00      ; 6 o'clock
+.db 0x00, 0x0e, 0x15, 0x1d, 0x11, 0x0e, 0x00, 0x00      ; 9 o'clock
 
 dStaticDataEnd:
 
 .equ kdStaticDataLen = 2 * ( dStaticDataEnd - dStaticDataBegin )
+
 
 
 
@@ -967,7 +1028,18 @@ dStaticDataEnd:
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-; None
+; ***************************************
+;  T I M E R 1   C O M P A R E   A
+;  (OCR1A Interrupt)
+; ***************************************
+
+hdlrTIM1_COMPA:
+
+    in rSREG, SREG
+    setTimerFlag
+    out SREG, rSREG
+
+    reti
 
 
 
@@ -1009,10 +1081,18 @@ main:
     rcall clearRpnStack
     clr rState
 
+    ; Start the timer that drives the watch icon
+    rcall initializeTimer
+    sei
+
     ; Configure the keypad to accept inputs
     rcall configureKeypad
 
-    mainLoop:
+mainLoop:
+        ; Check if Timer went off
+        sbrc rState, kTimerBitNbr               ; Skip next if Timer hasn't gone off
+        rcall updateWatchIcon
+
         ; Look for rows to go low
         in rTmp1, pRowPin
         andi rTmp1, kRowBitsOnes
@@ -1263,8 +1343,8 @@ doOverflow_Finish:
 
 doOverflowDisplay:                              ; Entry point for doNumericKey on overflow
     setOverflowCondition                        ; Turns on red LED
-    setLcdRowColM 1, 0                          ; Display the overflow msg instead of RPN X
-    displayMsgOnLcdM sOverflowMsg
+    setLcdRowColM 1, 1                          ; Display the overflow msg instead of RPN X
+    displayNbrOnLcdM (sOverflowMsg + 1)         ; Don't overwrite the watch icon
     ret
 
 
@@ -1284,13 +1364,13 @@ doOverflowDisplay:                              ; Entry point for doNumericKey o
 
 displayEntryNbr:
     ; Move the entry number to display routine argument
-    setLcdRowColM 1, 0                  ; Uses rArgByte0 & rArgByte1
+    setLcdRowColM 1, 1                  ; Uses rArgByte0 & rArgByte1
     moveNbrByteToArgByte
 
 displayArgByte:
     ; Convert the number to decimal ASCII string and display
     rcall convertDwordToAscStr
-    displayMsgOnLcdM sDisplayNbrStr
+    displayNbrOnLcdM sDisplayNbrStr
     ret
 
 
@@ -1301,7 +1381,7 @@ displayArgByte:
 
 displayRpnX:
     ; Move RPN X to display routine argument
-    setLcdRowColM 1, 0                  ; Uses rArgByte0 & rArgByte1
+    setLcdRowColM 1, 1                  ; Uses rArgByte0 & rArgByte1
     moveRpnXToArgBtye
     rcall displayArgByte
     ret
@@ -1314,7 +1394,7 @@ displayRpnX:
 
 displayRpnY:
    ; Move the entry number to  display routine argument
-   setLcdRowColM 0, 0                  ; Uses rArgByte0 & rArgByte1
+   setLcdRowColM 0, 1                  ; Uses rArgByte0 & rArgByte1
    moveRpnYToArgBtye
    rcall displayArgByte
    ret
@@ -2331,6 +2411,66 @@ configureKeypad:
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ;
+;  T I M E R   R E L A T E D
+;
+; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+initializeTimer:
+
+    ; Set up Timer1 (CTC mode, prescalar=256, CompA interrupt on)
+
+    ldi rTmp1, ( 1 << WGM12 ) | ( 1 << CS12 )   ; Select CTC mode with prescalar = 256
+    sts TCCR1B, rTmp1;
+
+    ; Load the CompA "top" counter value, 16-bit value must be loaded high-byte first
+
+    ldi rTmp1, High( kTimer1At1Hz )             ; Always load high byte first
+    sts OCR1AH, rTmp1;
+    ldi rTmp1, Low( kTimer1At1Hz )              ; And load low byte second
+    sts OCR1AL, rTmp1;
+
+    ; Enable the CompA interrupt for Timer1
+
+    ldi rTmp1, ( 1 << OCIE1A )                  ; Enable Compare A interrupt
+    sts TIMSK1, rTmp1;
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+updateWatchIcon:
+
+    cli                                         ; Disable interrupts
+    clearTimerFlag
+    mov rTmp2, rState                           ; Extract the lowest 2 bits of rState, increment, and mask
+    inc rTmp2
+    andi rTmp2, kIconBitMask
+
+    setLcdRowColM 1, 0                          ; And display the corresponding watch icon
+    sendDataToLcdMR rTmp2
+
+    andi rState, kIconBitAntiMask               ; Update the 2-bit counter within rState
+    or rState, rTmp2
+
+    sei                                         ; Done, re-enable interrupts
+    ret
+
+
+
+
+; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;
 ;  L O W - L E V E L   K E Y   H A N D L E R S
 ;
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2581,6 +2721,8 @@ initializeLcd:
     ; Set text entry more (L to R)
     sendCmdToLcdM  ( kLcdEntryModeSet | kLcdEntryLeft )
 
+    rcall loadCustomChars
+
     ; Clear display
     sendCmdToLcdM kLcdClearDisplay
     delayMicroSecondsM 2000                     ; Clear cmd takes a long time...
@@ -2678,6 +2820,60 @@ NoOffsetRequired:
     ori rLcdArg1, kLcdSetDdramAddr              ; Incorporate the command itself
     mov rLcdArg0, rLcdArg1                      ; Move the cmd to rLcdArg0
     rcall sendCmdToLcd
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+loadCustomChars:
+
+    ; Z             = pointer to SRAM to 15 character (byte) number string to display
+    ; rTmp1         = temporary
+    ; rLoop1        = loop counter
+    ; rLcdArg0      = Used
+
+    sendCmdToLcdM kLcdSetCgramAddr
+
+    ldiw Z, sWatchIcons
+    ldi rTmp1, kWatchIconLen
+    mov rLoop1, rTmp1
+loadIconDataLoop:
+        ld rLcdArg0, Z+
+        rcall sendDataToLcd
+        dec rLoop1
+        brne loadIconDataLoop
+
+    ret
+
+
+
+; **********************************
+;  S U B R O U T I N E
+; **********************************
+
+displayNbrOnLcd:
+
+    ; Z passed as parameter (pointer to message, modified)
+
+    ; Z             = pointer to SRAM to 15 character (byte) number string to display
+    ; rTmp1         = temporary
+    ; rLoop1        = loop counter
+    ; rLcdArg0      = Used
+
+    ; Position display is assumed to be set previously
+
+    ; Set up loop and display
+    ldi rTmp1, kDisplayNbrLen
+    mov rLoop1, rTmp1
+displayNbrLoop:
+        ld rLcdArg0, Z+
+        rcall sendDataToLcd
+        dec rLoop1
+        brne displayNbrLoop
 
     ret
 

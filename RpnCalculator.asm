@@ -343,8 +343,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = tmp reg to use (upper half)
-.macro initializeStack
+; Initialize stack pointer
+.macro initializeStack                          ; Arguments:  register (used as temporary)
     .ifdef SPH
         ldi @0, High( RAMEND )
         out SPH, @0                             ; Upper byte of stack pointer (always load high-byte first)
@@ -359,8 +359,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = register base name, @1 = 16-bit constant
-.macro ldiw
+; Load an immediate 16-bit value to a pair of registers ending in H and L (e.g., XL, XH)
+.macro ldiw                                     ; Arguments:  register base name, constant (16-bit)
    ldi @0H, High( @1 )
    ldi @0L, Low( @1 )
 .endm
@@ -371,8 +371,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = register base name to be pushed onto stack (L first, H second)
-.macro pushw
+; Push a pair of registers ending in H and L onto the stack (e.g., XL, XH); L first, H second
+.macro pushw                                    ; Arguments: register base name
    push @0L
    push @0H
 .endm
@@ -383,8 +383,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = register base name to be popped from stack (H first, L second)
-.macro popw
+; Pop a pair of registers ending in H and L (e.g., XL, XH) from the stack; L first, H second
+.macro popw                                     ; Arguments: register base name
    pop @0H
    pop @0L
 .endm
@@ -395,10 +395,38 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = number of microseconds to delay (16-bit word)
-.macro delayMicroSecondsM
-    ldi rDelayUsH, High( @0 )               ; Same as rArgByte3
-    ldi rDelayUsL, Low( @0 )                ; Same as rArgByte2
+; Set a bit in a register by bit number (e.g., 0-7)
+.macro srbn                                     ; Arguments:  register, bit number to set
+	.if @1 > 7
+		.message "Bit number must be 0-7"
+	.endif
+	sbr  @0, (1<<@1)
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Clear a bit in a register by bit number (e.g., 0-7)
+.macro crbn                                     ; Arguments:  register, bit number to set
+	.if @1 > 7
+		.error "Bit number must be 0-7"
+	.endif
+	cbr  @0, (1<<@1)
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Delay a given number of microseconds, specified as a 16-bit constant
+.macro delayMicroSecondsM                       ; Arguments:  constant (16-bit, microseconds to delay)
+    ldi rDelayUsH, High( @0 )
+    ldi rDelayUsL, Low( @0 )
     call delayMicroSeconds
 .endm
 
@@ -408,10 +436,10 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = number of milliseconds to delay (word value)
-.macro delayMilliSecondsM
-    ldi rMillisH, High( @0 )                ; Same as rArgByte3
-    ldi rMillisL, Low( @0 )                 ; Same as rArgByte2
+; Delay a given number of milliseconds, specified as a 16-bit constant
+.macro delayMilliSecondsM                       ; Arguments:  constant (16-bit, milliseconds to delay)
+    ldi rMillisH, High( @0 )
+    ldi rMillisL, Low( @0 )
     call delayMilliSeconds
 .endm
 
@@ -421,9 +449,9 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = number of tenths of seconds to delay (byte value)
-.macro delayTenthsOfSecondsM
-    ldi r10ths, Low( @0 )                ; Same as rArgByte0
+; Delay a given number of tenths of seconds, specified as an 8-bit constant
+.macro delayTenthsOfSecondsM                    ; Arguments:  constant (8-bit, 10th of seconds to delay)
+    ldi r10ths, Low( @0 )                       ; Same as rArgByte0
     call delayTenthsOfSeconds
 .endm
 
@@ -433,8 +461,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  none
-.macro clearLcd
+; Clear the LCD display
+.macro clearLcd                                 ; Arguments:  <none>
     ldi rLcdArg0, kLcdClearDisplay
     rcall sendCmdToLcd
 .endm
@@ -445,8 +473,14 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = row  (byte), @1 = column (byte)
-.macro setLcdRowColM
+; Set the row and column of the LCD display (where the next character displays); specificed as 8-bit constants
+.macro setLcdRowColM                            ; Arguments:  row number, column number
+    .if @0 > 1
+        .error "Row number must be 0 or 1"
+    .endif
+    .if @1 > 15
+        .error "Column number must be 0-15"
+    .endif
     ldi rLcdArg0, @0
     ldi rLcdArg1, @1
     rcall setLcdRowCol
@@ -458,8 +492,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = LCD command (byte)
-.macro sendCmdToLcdM
+; Send an 8-bit constant command to the LCD
+.macro sendCmdToLcdM                            ; Arguments:  constant (8-bit)
     ldi rLcdArg0, @0
     rcall sendCmdToLcd
 .endm
@@ -470,8 +504,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = Data to display (byte)
-.macro sendDataToLcdM
+; Send 8-bit constant value to the LCD (usually for display, but depends on prior command)
+.macro sendDataToLcdM                           ; Arguments:  constant (8-bit)
     ldi rLcdArg0, @0
     rcall sendDataToLcd
 .endm
@@ -482,8 +516,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = Data to display (byte)
-.macro sendDataToLcdMR
+; Send value in a register to the LCD (usually for display, but depends on prior command)
+.macro sendDataToLcdMR                          ; Arguments:  register
     mov rLcdArg0, @0
     rcall sendDataToLcd
 .endm
@@ -494,8 +528,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = address of 16 bit message to display on LCD
-.macro displayMsgOnLcdM
+; Send a 16-byte string stored in SRAM to the LCD display
+.macro displayMsgOnLcdM                         ; Arguments:  address in SRAM
     ldiw Z, @0
     rcall displayMsgOnLcd
 .endm
@@ -506,8 +540,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  @0 = address of 15 bit number string to display on LCD
-.macro displayNbrOnLcdM
+; Send a 15-byte string stored in SRAM to the LCD display (meant for displaying numbers)
+.macro displayNbrOnLcdM                         ; Arguments:  address in SRAM
     ldiw Z, @0
     rcall displayNbrOnLcd
 .endm
@@ -519,8 +553,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  none
-.macro turnOnGreenLed
+; Turn the green LED on
+.macro turnOnGreenLed                           ; Arguments: <none>
     sbi pGreenLedPort, pGreenLedPortBit
 .endm
 
@@ -530,8 +564,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  none
-.macro turnOnRedLed
+; Turn the red LED on
+.macro turnOnRedLed                             ; Arguments: <none>
     sbi pRedLedPort, pRedLedPortBit
 .endm
 
@@ -541,8 +575,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  none
-.macro turnOffGreenLed
+; Turn the green LED off
+.macro turnOffGreenLed                          ; Arguments: <none>
     cbi pGreenLedPort, pGreenLedPortBit
 .endm
 
@@ -552,8 +586,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  none
-.macro turnOffRedLed
+; Turn the red LED off
+.macro turnOffRedLed                            ; Arguments: <none>
     cbi pRedLedPort, pRedLedPortBit
 .endm
 
@@ -563,8 +597,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None (doubles rNbrByte3:rNbrByte0)
-.macro multiplyNbrBy2
+; Double the number stored in rNbrByte3:rNbrByte0
+.macro multiplyNbrBy2                           ; Arguments: <none>
     lsl rNbrByte0
     rol rNbrByte1
     rol rNbrByte2
@@ -605,8 +639,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro moveArgByteToNbrByte
+; Move the number in rArgByte3:rArgByte0 to rNbrByte3:rNbrByte0
+.macro moveArgByteToNbrByte                     ; Arguments: <none>
     mov rNbrByte0, rArgByte0
     mov rNbrByte1, rArgByte1
     mov rNbrByte2, rArgByte2
@@ -619,8 +653,23 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro moveRpnXToArgBtye
+; Move the number in rNbrByte3:rNbrByte0 to RPN X (in SRAM)
+.macro moveNbrByteToRpnX                        ; Arguments: <none>
+    ldiw Z, sRpnX
+    st Z+, rNbrByte0
+    st Z+, rNbrByte1
+    st Z+, rNbrByte2
+    st Z+, rNbrByte3
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Move the number in RPN X (in SRAM) to rArgByte3:rArgByte0
+.macro moveRpnXToArgByte                        ; Arguments: <none>
     ldiw Z, sRpnX
     ld rArgByte0, Z+
     ld rArgByte1, Z+
@@ -634,8 +683,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro moveArgByteToRpnX
+; Move the number in rArgByte3:rArgByte0 to RPN X (in SRAM)
+.macro moveArgByteToRpnX                        ; Arguments: <none>
     ldiw Z, sRpnX
     st Z+, rArgByte0
     st Z+, rArgByte1
@@ -649,7 +698,7 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
+; Move the number in RPN Y (in SRAM) to rArgByte3:rArgByte0
 .macro moveRpnYToArgBtye                        ; Arguments: <none>
     ldiw Z, sRpnY
     ld rArgByte0, Z+
@@ -664,8 +713,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro moveArgByteToRpnY
+; Move the number in rArgByte3:rArgByte0 to RPN Y (in SRAM)
+.macro moveArgByteToRpnY                        ; Arguments: <none>
     ldiw Z, sRpnY
     st Z+, rArgByte0
     st Z+, rArgByte1
@@ -679,8 +728,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro moveRpnXToScratch
+; Move the number in RPN X (in SRAM) to rScratch3:rScratch0
+.macro moveRpnXToScratch                        ; Arguments: <none>
     ldiw Z, sRpnX
     ld rScratch0, Z+
     ld rScratch1, Z+
@@ -694,8 +743,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro moveArgByteToScratch
+; Move the number in rArgByte3:rArgByte0 to rScratch3:rScratch0
+.macro moveArgByteToScratch                     ; Arguments: <none>
     mov rScratch0, rArgByte0
     mov rScratch1, rArgByte1
     mov rScratch2, rArgByte2
@@ -708,9 +757,9 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro clearTimerFlag
-    cbr rState, kTimerBit                       ; Clear the Timer flag
+; Clear the Timer flag (used to indicate time to rotate icon)
+.macro clearTimerFlag                           ; Arguments: <none>
+    cbr rState, kTimerBit
 .endm
 
 
@@ -719,9 +768,9 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro setTimerFlag
-    sbr rState, kTimerBit                       ; Set the Timer flag
+; Set the Timer flag (used to indicate time to rotate icon)
+.macro setTimerFlag                             ; Arguments: <none>
+    sbr rState, kTimerBit
 .endm
 
 
@@ -731,9 +780,9 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro clearEnterKeyHitFlag
-    cbr rState, kPriorEnterBit                  ; Clear the Enter key flag
+; Clear the Enter Key flag (used to indicate last key hit was Enter)
+.macro clearEnterKeyHitFlag                     ; Arguments: <none>
+    cbr rState, kPriorEnterBit
 .endm
 
 
@@ -742,9 +791,9 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro setEnterKeyHitFlag
-    sbr rState, kPriorEnterBit                  ; Set the Enter key flag
+; Set the Enter Key flag (used to indicate last key hit was Enter)
+.macro setEnterKeyHitFlag                       ; Arguments: <none>
+    sbr rState, kPriorEnterBit
 .endm
 
 
@@ -753,21 +802,9 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro setOverflowCondition
-    sbr rState, kOverflowBit                    ; Set the overflow flag
-    turnOnRedLed
-.endm
-
-
-
-; **********************************
-;  M A C R O
-; **********************************
-
-; Arguments:  None
-.macro clearOverflowCondition
-    cbr rState, kOverflowBit                    ; Clear the overflow flag
+; clear overflow indicators (overflow bit and red LED)
+.macro clearOverflowCondition                   ; Arguments: <none>
+    cbr rState, kOverflowBit
     turnOffRedLed
 .endm
 
@@ -777,8 +814,20 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro loadArgByteMaxPosValue
+; Set overflow indicators (overflow bit and red LED)
+.macro setOverflowCondition                     ; Arguments: <none>
+    sbr rState, kOverflowBit
+    turnOnRedLed
+.endm
+
+
+
+; **********************************
+;  M A C R O
+; **********************************
+
+; Load most positive 32-bit integer into rArgByte3:rArgByte0
+.macro loadArgByteMaxPosValue                   ; Arguments: <none>
     ldi rArgByte0, 0xff
     ldi rArgByte1, 0xff
     ldi rArgByte2, 0xff

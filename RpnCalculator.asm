@@ -665,7 +665,7 @@
 ; **********************************
 
 ; Arguments:  None
-.macro moveRpnYToArgBtye
+.macro moveRpnYToArgBtye                        ; Arguments: <none>
     ldiw Z, sRpnY
     ld rArgByte0, Z+
     ld rArgByte1, Z+
@@ -1179,7 +1179,7 @@ doChangeSignKey:
     ret
 
 doChangeSignKey_NotEnteringNumber:
-    moveRpnXToArgBtye                           ; Not in number entry mode, so negate RPN X
+    moveRpnXToArgByte                           ; Not in number entry mode, so negate RPN X
     rcall doDword2sComplement
     moveArgByteToRpnX
     setLcdRowColM 1, 1
@@ -1382,7 +1382,7 @@ displayArgByte:
 displayRpnX:
     ; Move RPN X to display routine argument
     setLcdRowColM 1, 1                  ; Uses rArgByte0 & rArgByte1
-    moveRpnXToArgBtye
+    moveRpnXToArgByte
     rcall displayArgByte
     ret
 
@@ -1570,7 +1570,7 @@ addRpnXandY:
 
     moveRpnXToScratch
     rcall dropRpnStack
-    moveRpnXToArgBtye
+    moveRpnXToArgByte
 
     add rArgByte0, rScratch0
     adc rArgByte1, rScratch1
@@ -1616,12 +1616,12 @@ subtractRpnXfromY:
     ldi rTmp1, kOverflowSignBit                 ; Need this for toggling the sign bit
     clr rZero
 
-    moveRpnXToArgBtye
+    moveRpnXToArgByte
     rcall doDword2sComplement
     moveArgByteToScratch
     rcall dropRpnStack
     rcall displayRpnY
-    moveRpnXToArgBtye
+    moveRpnXToArgByte
 
     add rArgByte0, rScratch0
     adc rArgByte1, rScratch1
@@ -1680,7 +1680,7 @@ multiplyRpnXandY:
     clr rProd7
 
     ; Deal with X
-    moveRpnXToArgBtye
+    moveRpnXToArgByte
     sbrs rArgByte3, kSignBitNbr                 ; Skip next if it is negative
     rjmp multiplyRpnXandY_XisPositive
 
@@ -1846,7 +1846,7 @@ divideRpnYbyX:
     ldi rTmp1, kOverflowSignBit                 ; Need this for toggling the sign bit
 
     ; Deal with X
-    moveRpnXToArgBtye
+    moveRpnXToArgByte
     sbrs rArgByte3, kSignBitNbr                 ; Skip next if it is negative
     rjmp divideRpnYbyX_XisPositive
 

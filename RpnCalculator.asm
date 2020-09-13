@@ -577,8 +577,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro clearEntryNbr
+; Clear the number stored in rNbrByte3:rNbrByte0
+.macro clearNbrByte                            ; Arguments: <none>
     clr rNbrByte0
     clr rNbrByte1
     clr rNbrByte2
@@ -591,23 +591,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro moveEntryNbrToRpnX
-    ldiw Z, sRpnX
-    st Z+, rNbrByte0
-    st Z+, rNbrByte1
-    st Z+, rNbrByte2
-    st Z+, rNbrByte3
-.endm
-
-
-
-; **********************************
-;  M A C R O
-; **********************************
-
-; Arguments:  None
-.macro moveNbrByteToArgByte
+; Move the number in rNbrByte3:rNbrByte0 to rArgByte3:rArgByte0
+.macro moveNbrByteToArgByte                     ; Arguments: <none>
     mov rArgByte0, rNbrByte0
     mov rArgByte1, rNbrByte1
     mov rArgByte2, rNbrByte2
@@ -806,8 +791,8 @@
 ;  M A C R O
 ; **********************************
 
-; Arguments:  None
-.macro loadArgByteMaxNegValue
+; Load most negative 32-bit integer into rArgByte3:rArgByte0 (but not 0x80000000 due to its weirdnesses)
+.macro loadArgByteMinNegValue                   ; Arguments: <none>
     ldi rArgByte0, 0x01
     ldi rArgByte1, 0x00
     ldi rArgByte2, 0x00
@@ -1133,9 +1118,9 @@ doNumericKey:
 
 doNumericKey_PriorEnter:
     clearEnterKeyHitFlag
-    clearEntryNbr                               ; Clear the registers we accumulate the number in
+    clearNbrByte                                ; Clear the registers we accumulate the number in
     mov rNbrByte0, rKey
-    rcall displayEntryNbr                       ; Display the entry so far
+    rcall displayNbrByte                        ; Display the entry so far
     ret
 
 doNumericKey_Continuing:                        ; We are adding another digit to an on-going entry
@@ -1149,12 +1134,12 @@ doNumericKey_Continuing:                        ; We are adding another digit to
     adc rNbrByte3, rKey
     brvs doNumericKey_Overflow
 
-    rcall displayEntryNbr
+    rcall displayNbrByte
     ret
 
 doNumericKey_Overflow:
     rcall doOverflowDisplay                     ; Do a stripped-down version of overflow (only display portion)
-    clearEntryNbr                               ; Discard the number but stay in input mode
+    clearNbrByte                                ; Discard the number but stay in input mode
     ret
 
 
@@ -1315,7 +1300,7 @@ endNumberEntryMode:
                                                 ; Yes, we are: so...
     cbr rState, kDigitEntryBit                  ; Clear number entry mode state
     turnOffGreenLed
-    moveEntryNbrToRpnX
+    moveNbrByteToRpnX
     rcall displayRpnX                           ; Always display RPN X (might have been a prior overflow)
 
     ret
@@ -1335,7 +1320,7 @@ doOverflow:
     rjmp doOverflow_Finish
 
 doOverflow_Negative:
-    loadArgByteMaxNegValue
+    loadArgByteMinNegValue
 
 doOverflow_Finish:
     moveArgByteToRpnX                           ; Update RPN X
@@ -1362,7 +1347,7 @@ doOverflowDisplay:                              ; Entry point for doNumericKey o
 ;  S U B R O U T I N E
 ; **********************************
 
-displayEntryNbr:
+displayNbrByte:
     ; Move the entry number to display routine argument
     setLcdRowColM 1, 1                  ; Uses rArgByte0 & rArgByte1
     moveNbrByteToArgByte

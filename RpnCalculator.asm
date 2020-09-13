@@ -598,7 +598,7 @@
 ; **********************************
 
 ; Double the number stored in rNbrByte3:rNbrByte0
-.macro multiplyNbrBy2                           ; Arguments: <none>
+.macro multiplyNbrByteBy2                       ; Arguments: <none>
     lsl rNbrByte0
     rol rNbrByte1
     rol rNbrByte2
@@ -1173,7 +1173,7 @@ doNumericKey_PriorEnter:
     ret
 
 doNumericKey_Continuing:                        ; We are adding another digit to an on-going entry
-    rcall multiplyBy10                          ; Multiply the existing number by 10 to incorporate a new digit
+    rcall multiplyNbrByteBy10                   ; Multiply the existing number by 10 to incorporate a new digit
     brts doNumericKey_Overflow                  ; T flag is set if we had an overflow
 
     add rNbrByte0, rKey                         ; Add the current digit
@@ -1989,7 +1989,7 @@ divideRpnYbyX_Overflow:
 ;  S U B R O U T I N E
 ; **********************************
 
-multiplyBy10:
+multiplyNbrByteBy10:
 
     ; Multiple a DWORD number by 10 using doubling and repeated additions
 
@@ -2007,18 +2007,18 @@ multiplyBy10:
 
     clt                                         ; Clear T flag
 
-    multiplyNbrBy2
-    brvs multiplyBy10_Overflow
+    multiplyNbrByteBy2
+    brvs multiplyNbrByteBy10_Overflow
 
     push rNbrByte3
     push rNbrByte2
     push rNbrByte1
     push rNbrByte0
 
-    multiplyNbrBy2
-    brvs multiplyBy10_Overflow_Pop
-    multiplyNbrBy2
-    brvs multiplyBy10_Overflow_Pop
+    multiplyNbrByteBy2
+    brvs multiplyNbrByteBy10_Overflow_Pop
+    multiplyNbrByteBy2
+    brvs multiplyNbrByteBy10_Overflow_Pop
 
     pop rTmp1
     add rNbrByte0, rTmp1
@@ -2028,17 +2028,17 @@ multiplyBy10:
     adc rNbrByte2, rTmp1
     pop rTmp1
     adc rNbrByte3, rTmp1
-    brvs multiplyBy10_Overflow
+    brvs multiplyNbrByteBy10_Overflow
 
     ret
 
-multiplyBy10_Overflow_Pop:
+multiplyNbrByteBy10_Overflow_Pop:
     pop rTmp1                                   ; Need to pop values off the stack
     pop rTmp1
     pop rTmp1
     pop rTmp1
 
-multiplyBy10_Overflow:
+multiplyNbrByteBy10_Overflow:
     set                                         ; Set T flag to indicate overflow
     ret
 

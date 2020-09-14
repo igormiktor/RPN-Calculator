@@ -2327,6 +2327,9 @@ getOneDecimalDigit_3:
 
 doKeyHit:
 
+    ; A key has been hit.  Figure out which key and then dispatch based
+    ; on the key hit to the appropriate code to handle it.
+
     rcall scanKeyPad
     delayMilliSecondsM 200                      ; Delay for button de-bounce
     clearOverflowCondition                      ; Any key hit clears overflow
@@ -2340,6 +2343,15 @@ doKeyHit:
 ; **********************************
 
 dispatchKey:
+
+    ; We know the key in rKey was hit; call the appropriate key handler ("doKeyNN") routine
+
+    ; rKey              = Argument in with value of the number corresponding to the key hit
+    ; rTmp2             = Used
+    ; X                 = Pointer to the jump table of "doKeyNN" routines
+    ; Z                 = Value of jump table entry at index "rKey"
+    ;                   = address of routine we indirect call to
+
     ldiw X, sJumpTable                          ; Read number corresponding to key from SRAM
     lsl rKey                                    ; Multiply by 2 (jump addresses are words)
     add XL, rKey                                ; Add the offset (possible carry required)
@@ -2356,14 +2368,21 @@ dispatchKey:
 ;  S U B R O U T I N E
 ; **********************************
 
-; Returns the number of the key hit in register rKey
-; Numbered as:
-;   0   1   2   3
-;   4   5   6   7
-;   8   9   10  11
-;   12  13  14  15
-
 scanKeyPad:
+
+    ; We know a key has been hit.  Figure out the number of the key hit
+    ; and return it in register "rKey"
+
+    ; Keypad keys are numbered as follows:
+    ;   0   1   2   3
+    ;   4   5   6   7
+    ;   8   9   10  11
+    ;   12  13  14  15
+
+    ; rKey                      = Returns the number of the key hit
+    ; rTmp1                     = used
+    ; rArgByte1:rArgByte0       = used (call)
+
     sbis pRowPin, kRow1                         ; Find row of keypress
     ldi rKey, 0                                 ; Set Row pointer
     sbis pRowPin, kRow2
@@ -2435,7 +2454,7 @@ configureKeypad:
     ori rTmp1, kRowBitsOnes
     out pRowPort, rTmp1
 
-    delayMicroSecondsM 200                      ; Allow time for port to settle
+    delayMicroSecondsM 200                      ; Allow time for ports to settle
 
     ret
 
@@ -2458,6 +2477,8 @@ configureKeypad:
 initializeTimer:
 
     ; Set up Timer1 (CTC mode, prescalar=256, CompA interrupt on)
+
+    ; rTmp1         = Used
 
     ldi rTmp1, ( 1 << WGM12 ) | ( 1 << CS12 )   ; Select CTC mode with prescalar = 256
     sts TCCR1B, rTmp1;
@@ -2484,13 +2505,21 @@ initializeTimer:
 
 updateWatchIcon:
 
+    ; Cycle to the next watch icon (character) and display it
+
+    ; rState            = Updated (Timer Flag and the Icon bits (#0 and #1))
+    ; rTmp2             = Used
+    ; rArgByte0         = Used (call)
+    ; rArgByte1         = Used (call)
+    ; rTmp1             = Call
+
     cli                                         ; Disable interrupts
     clearTimerFlag
     mov rTmp2, rState                           ; Extract the lowest 2 bits of rState, increment, and mask
     inc rTmp2
     andi rTmp2, kIconBitMask
 
-    setLcdRowColM 1, 0                          ; And display the corresponding watch icon
+    setLcdRowColM 1, 0                          ; Display the corresponding watch icon
     sendDataToLcdMR rTmp2
 
     andi rState, kIconBitAntiMask               ; Update the 2-bit counter within rState
@@ -2697,6 +2726,11 @@ doKey15:
 
 initializeLcd:
 
+    ; Initialize the LCD according to the specific sequence required by the HD44780U
+    ; This stuff is like some magical incantation...
+
+    ; All kinds of registers are used, but only executed at start up, so no big deal.
+
     ; Configure the LCD pins for output
     sbi pLcdD4DirD, pLcdD4DirDBit
     sbi pLcdD5DirD, pLcdD5DirDBit
@@ -2752,7 +2786,7 @@ initializeLcd:
     ; Turn on display, with cursor off and blinking off
     sendCmdToLcdM ( kLcdDisplayControl | kLcdDisplayOn | kLcdCursorOff | kLcdBlinkOff )
 
-    ; Set text entry more (L to R)
+    ; Set text entry mode (L to R)
     sendCmdToLcdM  ( kLcdEntryModeSet | kLcdEntryLeft )
 
     rcall loadCustomChars
@@ -2771,6 +2805,9 @@ initializeLcd:
 
 write4BitsToLcd:
 
+    ; Send 4-bits to the LCD (remember we are in 4-wire/4-bit mode)
+    ; Interpretation of these bits depends on the state (high/low) of the data select pin
+    ; and/or any prior commands sent to the LCD
     ; Register rLcdArg0 is passed as parameter (the 4-bits to write)
 
     ; rLcdArg0 = the 4-bits to write to the LCD in lower nibble (modified)
@@ -2810,6 +2847,9 @@ write4BitsToLcd:
 
 sendDataToLcd:
 
+    ; Send data to the LCD, in most cases to be displayed
+    ; Precise interpretation depends on last command sent to LCD
+    ; Alternate entry point @sendCmdToLcd sends the value as a command to LCD
     ; Register rLcdArg0 is passed as parameter
 
     ; rLcdArg0 = the byte to write to the LCD (modified)
@@ -2820,7 +2860,7 @@ sendDataToLcd:
     sbi pLcdDataSelectPort, pLcdDataSelectPortBit   ; Pin on to send data
     rjmp send8BitsToLcd
 
-sendCmdToLcd:
+sendCmdToLcd:                                       ; ALT ENTRY POINT:  DATA INTERPRETED AS COMMAND
 
     cbi pLcdDataSelectPort, pLcdDataSelectPortBit   ; Pin off to send command
     ; Intentional fall through
@@ -2842,6 +2882,7 @@ send8BitsToLcd:
 
 setLcdRowCol:
 
+    ; Set the LCD row and column for subsequent data to be displayed
     ; rLcdArg0 and rLcdArg1 passed as parameters (row, col)
 
     ; rLcdArg0 = LCD row (0-1)
@@ -2864,6 +2905,8 @@ NoOffsetRequired:
 ; **********************************
 
 loadCustomChars:
+
+    ; Load our watch icons as custom characters into the LCD (actually, the HD44780U chip)
 
     ; Z             = pointer to SRAM to 15 character (byte) number string to display
     ; rTmp1         = temporary
@@ -2898,7 +2941,7 @@ displayNbrOnLcd:
     ; rLoop1        = loop counter
     ; rLcdArg0      = Used
 
-    ; Position display is assumed to be set previously
+    ; Position where nbr is displayed is assumed to be set previously
 
     ; Set up loop and display
     ldi rTmp1, kDisplayNbrLen
@@ -2926,7 +2969,7 @@ displayMsgOnLcd:
     ; rLoop1        = loop counter
     ; rLcdArg0      = Used
 
-    ; Position display is assumed to be set previously
+    ; Position where msg is displayed is assumed to be set previously
 
     ; Set up loop and display
     ldi rTmp1, kDisplayMsgLen
@@ -2957,7 +3000,7 @@ displayMsgLoop:
 
 initializeStaticData:
 
-    ; Copy the static strings into SRAM
+    ; Copy the static data from PROGMEM into SRAM
 
     ; Z             = pointer to program memory
     ; X             = pointer to SRAM
@@ -2966,9 +3009,9 @@ initializeStaticData:
 
     ; Set up pointers to read from PROGMEM to SRAM
     ldi rTmp1, kdStaticDataLen
-    ldiw Z, dStaticDataBegin << 1
+    ldiw Z, dStaticDataBegin << 1               ; PROGMEM addresses have to be multiplied by 2
     ldiw X, sStaticDataBegin
-initializeStaticData_Loop:                               ; Actual transfer loop from PROGMEM to SRAM
+initializeStaticData_Loop:                      ; Actual transfer loop from PROGMEM to SRAM
         lpm rTmp2, Z+
         st X+, rTmp2
         dec rTmp1
@@ -2979,7 +3022,7 @@ initializeStaticData_Loop:                               ; Actual transfer loop 
     ldiw X, sLeadingSpaces
     st X+, rTmp1
     st X+, rTmp1
-    st X+, rTmp1
+    st X+, rTmp1                                ; Where the "minus sign" goes (for negatives)
     ldiw X, sTrailingSpaces
     st X+, rTmp1
     st X+, rTmp1
@@ -3004,10 +3047,9 @@ initializeStaticData_Loop:                               ; Actual transfer loop 
 
 delayMicroSeconds:
 
-    ; Register r25:24 is passed as parameter (the number of microseconds to delay)
+    ; Register rDelayUsH:rDelayUsL is passed as parameter (the number of microseconds to delay)
 
-    ; r24 = LSB microseconds to delay
-    ; r25 = MSB microseconds to delay
+    ; rDelayUsH:rDelayUsL       = MSB:LSB microseconds to delay
 
     ; 1 microsecond = 16 cycles.
     ; Call/return overhead takes 7-8 cycles (depending on rcall or call).
@@ -3055,13 +3097,13 @@ delayMicroseconds_Ret:
 
 delayMilliSeconds:
 
-    ; Register r25:r24 (milliSecCounter) is passed as parameter
+    ; Register rMillisH:rMillisL is passed as parameter
 
-    ; r25:r24 = number of milliseconds to count (comes in as argument)
-    ;     = number of times to execute the outer+inner loops combined
-    ; r16 = outer loop counter byte
-    ; r26 = low byte of inner loop counter word
-    ; r27 = high byte of inner loop counter word
+    ; rMillisH:rMillisL         = number of milliseconds to count (comes in as argument)
+    ;                           = number of times to execute the outer+inner loops combined
+    ; rDWMSOuter                = outer loop counter byte
+    ; rDWMSInnerH               = low byte of inner loop counter word
+    ; rDWMSInnerH               = high byte of inner loop counter word
 
     ; Executing the following combination of inner and outer loop cycles takes almost precisely 1 millisecond at 16 MHz
     .equ kDWMSOuterCount    = 2
@@ -3107,12 +3149,12 @@ delayMilliSeconds:
 
 delayTenthsOfSeconds:
 
-    ; Register r24 (tenthOfSecCounter) is passed as parameter
-    ; r24 = number of tenths-of-seconds to count (comes in as argument)
-    ;     = number of times to execute the outer+inner loops combined
-    ; r25 = outer loop counter byte
-    ; r26 = low byte of inner loop counter word
-    ; r27 = high byte of inner loop counter word
+    ; Register r10ths is passed as parameter
+    ; r10ths        = number of tenths-of-seconds to count (comes in as argument)
+    ;               = number of times to execute the outer+inner loops combined
+    ; rDTSOuter     = outer loop counter byte
+    ; rDTSInnerL    = low byte of inner loop counter word
+    ; rDTSInnerH    = high byte of inner loop counter word
 
     ; Executing the following combination of inner and outer loop cycles takes almost precisely 0.1 seconds at 16 Mhz
     .equ kDTSOuterCount     = 7

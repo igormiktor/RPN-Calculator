@@ -1228,6 +1228,11 @@ doNumericKey_Overflow:
 
 doChangeSignKey:
 
+    ; Handle request to change the sign of the "current" number.
+    ; Two cases to consider:
+    ;   (1) We are actively entering a number --> change its sign
+    ;   (2) We are not actively entering a number --> change the sign of RPN X
+
     clearEnterKeyHitFlag
 
     ; If entering number, change sign of number being entered
@@ -1237,14 +1242,14 @@ doChangeSignKey:
     moveNbrByteToArgByte                        ; Skip to here, so entering a number: negate it
     rcall doDword2sComplement
     moveArgByteToNbrByte
-    setLcdRowColM 1, 1
-    rcall displayArgByte
-    ret
+    rjmp doChangeSignKey_Finish
 
 doChangeSignKey_NotEnteringNumber:
     moveRpnXToArgByte                           ; Not in number entry mode, so negate RPN X
     rcall doDword2sComplement
     moveArgByteToRpnX
+
+doChangeSignKey_Finish:
     setLcdRowColM 1, 1
     rcall displayArgByte
     ret

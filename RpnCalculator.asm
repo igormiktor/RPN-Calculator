@@ -1153,6 +1153,21 @@ mainLoop:
 
 doNumericKey:
 
+    ; Handle a numeric key press.  The numerical value of the number key is
+    ; is passed into this subroutine in register rKey.
+    ; The basic process is:
+    ;   - If first number key hit, enter number entry mode:
+    ;       - Clear rNbrByte3:rNbrByte0 (where the entering number is assembled)
+    ;       - Set the number entry mode flag
+    ;       - Lift the stack (unless Enter was the key hit immediately prior)
+    ;       - Load rKey in rNbrByte0
+    ;   - If a subsequent (not first) number key, then:
+    ;       - Multiply the number so far (rArgByte3:rArgByte0) by 10
+    ;       - If positive number, add rKey to it
+    ;       - If negative number, add -rKey (2s complement) to it
+    ;       - Check throughout for overflow
+    ;   - In both cases, update the display
+
     ; rKey = (inbound) the numerical value of number key
 
     sbrc rState, kDigitEntryBitNbr              ; Skip next if not already entering a number
@@ -1176,6 +1191,19 @@ doNumericKey_Continuing:                        ; We are adding another digit to
     rcall multiplyNbrByteBy10                   ; Multiply the existing number by 10 to incorporate a new digit
     brts doNumericKey_Overflow                  ; T flag is set if we had an overflow
 
+    sbrs rNbrByte3, kSignBitNbr                 ; Skip next if current number is negative
+    rjmp doNumericKey_PositiveEntry             ; If current number is positive, jmp
+
+    neg rKey                                    ; Add -(rKey) so overflow flag makes sense
+    add rNbrByte0, rKey
+    ldi rKey, 0xff                              ; Doesn't change carry or overflow flag
+    adc rNbrByte1, rKey
+    adc rNbrByte2, rKey
+    adc rNbrByte3, rKey
+    brvs doNumericKey_Overflow
+    rjmp doNumericKey_Finished
+
+doNumericKey_PositiveEntry:
     add rNbrByte0, rKey                         ; Add the current digit
     clr rKey                                    ; Doesn't affect carry flag
     adc rNbrByte1, rKey
@@ -1183,6 +1211,7 @@ doNumericKey_Continuing:                        ; We are adding another digit to
     adc rNbrByte3, rKey
     brvs doNumericKey_Overflow
 
+doNumericKey_Finished:
     rcall displayNbrByte
     ret
 

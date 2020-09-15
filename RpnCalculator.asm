@@ -1262,6 +1262,12 @@ doChangeSignKey_Finish:
 
 doEnterKey:
 
+    ; Handle the "Enter" key:
+    ;   - end number entry
+    ;   - lift the RPN stack
+    ;   - update display
+    ;   - set the Enter key flag (to prevent double stack lift)
+
     rcall endNumberEntryMode
 
     rcall liftRpnStack                          ; Always lift stack
@@ -1277,6 +1283,12 @@ doEnterKey:
 ; **********************************
 
 doPlusKey:
+
+    ; Handle the request for addition:
+    ;   - take care of housekeeping preliminaries
+    ;   - outsource the actual computation
+    ;   - deal with overflow
+    ;   - update display
 
     clearEnterKeyHitFlag
     rcall endNumberEntryMode
@@ -1300,6 +1312,12 @@ doPlusKey_Overflow:                             ; Sign of overflow determined by
 
 doMinusKey:
 
+    ; Handle the request for subtraction:
+    ;   - take care of housekeeping preliminaries
+    ;   - outsource the actual computation
+    ;   - deal with overflow
+    ;   - update display
+
     clearEnterKeyHitFlag
     rcall endNumberEntryMode
 
@@ -1321,6 +1339,12 @@ doMinusKey_Overflow:
 ; **********************************
 
 doMultiplyKey:
+
+    ; Handle the request for multiplication:
+    ;   - take care of housekeeping preliminaries
+    ;   - outsource the actual computation
+    ;   - deal with overflow
+    ;   - update display
 
     clearEnterKeyHitFlag
     rcall endNumberEntryMode
@@ -1344,6 +1368,12 @@ doMultiplyKey_Overflow:
 
 doDivideKey:
 
+    ; Handle the request for division:
+    ;   - take care of housekeeping preliminaries
+    ;   - outsource the actual computation
+    ;   - deal with overflow
+    ;   - update display
+
     clearEnterKeyHitFlag
     rcall endNumberEntryMode
 
@@ -1366,6 +1396,8 @@ doDivideKey_Overflow:
 
 beginNumberEntryMode:
 
+    ; Begins number entry mode by setting the flag and turning on greed LED
+
     sbr rState, kDigitEntryBit                  ; Set that we are in number entry mode
     turnOnGreenLed
     ret
@@ -1377,6 +1409,11 @@ beginNumberEntryMode:
 ; **********************************
 
 endNumberEntryMode:
+
+    ; Ends number entry by turning off the green LED, clearing flag, and
+    ; transfering number to RPN X
+
+    ; Safe to call even if no number entry is active
 
     sbrs rState, kDigitEntryBitNbr              ; Are we in number entry mode?
     ret                                         ; No, we are not: return
@@ -1396,6 +1433,16 @@ endNumberEntryMode:
 
 doOverflow:
 
+    ; Handles all cases of overflow
+    ; In all cases sets the red LED on and displays the overflow msg
+    ; In all cases except active number entry, replaces RPN X with
+    ; either max positive or min negative value.
+    ; In case of active number entry, simply clears NbrBtye (the entered number so far)
+    ; but leave RPN X alone.
+
+    ; Alternate entry @doOverflowDisplay is used only by doNumericKey for the case of
+    ; active number entry.
+
     sbrc rState, kOverflowSignBitNbr            ; If kOverflowSignBit of rState is clear, result is positive so skip next
     rjmp doOverflow_Negative                    ; Negative overflow, so jmp...
 
@@ -1409,11 +1456,13 @@ doOverflow_Finish:
     moveArgByteToRpnX                           ; Update RPN X
     rcall displayRpnY                           ; Update the display of RPN Y
 
-doOverflowDisplay:                              ; Entry point for doNumericKey on overflow
+doOverflowDisplay:                              ; ALT ENTRY POINT for doNumericKey on overflow
+
     setOverflowCondition                        ; Turns on red LED
     setLcdRowColM 1, 1                          ; Display the overflow msg instead of RPN X
     displayNbrOnLcdM (sOverflowMsg + 1)         ; Don't overwrite the watch icon
     ret
+
 
 
 
@@ -1431,12 +1480,16 @@ doOverflowDisplay:                              ; Entry point for doNumericKey o
 ; **********************************
 
 displayNbrByte:
-    ; Move the entry number to display routine argument
-    setLcdRowColM 1, 1                  ; Uses rArgByte0 & rArgByte1
+
+    ; Move NbrByte to ArgByte and display it
+    ; Alternate entry point @displayArgByte is simply to display ArgByte on LCD
+
+    setLcdRowColM 1, 1                          ; Uses rArgByte0 & rArgByte1
     moveNbrByteToArgByte
 
-displayArgByte:
-    ; Convert the number to decimal ASCII string and display
+displayArgByte:                                 ; ALT ENTRY POINT:  simply display ArgByte on LCD
+
+    ; Convert ArgByte to decimal ASCII string and display
     rcall convertDwordToAscStr
     displayNbrOnLcdM sDisplayNbrStr
     ret
@@ -1448,8 +1501,10 @@ displayArgByte:
 ; **********************************
 
 displayRpnX:
-    ; Move RPN X to display routine argument
-    setLcdRowColM 1, 1                  ; Uses rArgByte0 & rArgByte1
+
+    ; Move RPN X to ArgByte and display it
+
+    setLcdRowColM 1, 1                          ; Uses rArgByte0 & rArgByte1
     moveRpnXToArgByte
     rcall displayArgByte
     ret
@@ -1461,11 +1516,14 @@ displayRpnX:
 ; **********************************
 
 displayRpnY:
-   ; Move the entry number to  display routine argument
+
+   ; Move RPN Y to ArgByte and display it
+
    setLcdRowColM 0, 1                  ; Uses rArgByte0 & rArgByte1
    moveRpnYToArgBtye
    rcall displayArgByte
    ret
+
 
 
 
@@ -1598,6 +1656,7 @@ dropRpnStack_T2Z:
     brne dropRpnStack_T2Z
 
     ret
+
 
 
 
@@ -2190,7 +2249,7 @@ convertDwordToAscStr_3:                 ; This loop converts non-zero BCD digits
 
 convertDwordToBcdArray:
 
-    ; Convert a DWORD (32 bits) to a 10-digit-BCD array
+    ; Convert a DWORD (32 bits) to a 10-digit BCD array of characters
 
     ; Registers rArgByte3:rArgByte0 and Z passed in as arguments
     ; Result returned in 10-bytes starting where Z points
@@ -2306,7 +2365,7 @@ convertDwordToBcdArray:
 
 getOneDecimalDigit:
 
-    ; Determine one decimal digit by continued subtraction of a decimal value
+    ; Determine one decimal digit of rArgByte3:rArgByte0 by continued subtraction of a power of 10
 
     ; Registers rArgByte3:rArgByte0, rScratch3:rScratch0, and Z passed in as arguments
     ; Result returned where Z points; Z incremented, rArgByte3:rArgByte0 contains remainder
@@ -2343,6 +2402,7 @@ getOneDecimalDigit_3:
     st Z+, rTmp1                        ; Count of multiples subtracted is the digit, save and increment Z
 
 	ret
+
 
 
 

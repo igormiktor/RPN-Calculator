@@ -359,7 +359,7 @@
 ;  M A C R O
 ; **********************************
 
-; Load an immediate 16-bit value to a pair of registers ending in H and L (e.g., XL, XH)
+; Load an immediate 16-bit value to a pair of registers ending in L and H (e.g., XL, XH)
 .macro ldiw                                     ; Arguments:  register base name, constant (16-bit)
    ldi @0H, High( @1 )
    ldi @0L, Low( @1 )
@@ -371,7 +371,7 @@
 ;  M A C R O
 ; **********************************
 
-; Push a pair of registers ending in H and L onto the stack (e.g., XL, XH); L first, H second
+; Push a pair of registers ending in L and H onto the stack (e.g., XL, XH); L first, H second
 .macro pushw                                    ; Arguments: register base name
    push @0L
    push @0H
@@ -383,7 +383,7 @@
 ;  M A C R O
 ; **********************************
 
-; Pop a pair of registers ending in H and L (e.g., XL, XH) from the stack; L first, H second
+; Pop a pair of registers ending in L and H (e.g., XL, XH) from the stack; H first, L second
 .macro popw                                     ; Arguments: register base name
    pop @0H
    pop @0L

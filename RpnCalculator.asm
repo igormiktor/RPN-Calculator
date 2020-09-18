@@ -291,7 +291,7 @@
 .def rState                         = r19       ; State of operation
 .equ kIconBit1                      = 0x01      ; Bit 0 is part of the icon counter
 .equ kIconBit1Nbr                   = 0
-.equ kIconBit2                      = 0x02      ; Bit 0 is part of the icon counter
+.equ kIconBit2                      = 0x02      ; Bit 1 is part of the icon counter
 .equ kIconBit2Nbr                   = 1
 .equ kIconBitMask                   = 0x03      ; Bit mask for Icon counter
 .equ kIconBitAntiMask               = 0xfc      ; Bit mask for opposite of Icon counter

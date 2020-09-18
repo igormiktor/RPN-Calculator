@@ -175,7 +175,7 @@
 
 ; Timer constants
 .equ kTimer1At1Hz                   = 62449     ; "Top" value for 1Hz output with prescalar of 256
-.equ kTimer1At2Hz                   = 31224     ; "Top" value for 2Hz output with prescalar of 256
+.equ kTimer1At2Hz                   = 31225     ; "Top" value for 2Hz output with prescalar of 256
 
 ; Message and display related lengths
 .equ kDisplayMsgLen                 = 16

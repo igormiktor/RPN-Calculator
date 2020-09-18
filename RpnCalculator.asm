@@ -1194,7 +1194,7 @@ doNumericKey_Continuing:                        ; We are adding another digit to
     sbrs rNbrByte3, kSignBitNbr                 ; Skip next if current number is negative
     rjmp doNumericKey_PositiveEntry             ; If current number is positive, jmp
 
-    neg rKey                                    ; Add -(rKey) so overflow flag makes sense
+    neg rKey                                    ; Current number is negative so add -rKey
     add rNbrByte0, rKey
     ldi rKey, 0xff                              ; Doesn't change carry or overflow flag
     adc rNbrByte1, rKey

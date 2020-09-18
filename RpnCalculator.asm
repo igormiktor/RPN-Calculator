@@ -397,10 +397,10 @@
 
 ; Set a bit in a register by bit number (e.g., 0-7)
 .macro srbn                                     ; Arguments:  register, bit number to set
-	.if @1 > 7
-		.message "Bit number must be 0-7"
-	.endif
-	sbr  @0, (1<<@1)
+    .if @1 > 7
+        .message "Bit number must be 0-7"
+    .endif
+    sbr  @0, (1<<@1)
 .endm
 
 
@@ -411,10 +411,10 @@
 
 ; Clear a bit in a register by bit number (e.g., 0-7)
 .macro crbn                                     ; Arguments:  register, bit number to set
-	.if @1 > 7
-		.error "Bit number must be 0-7"
-	.endif
-	cbr  @0, (1<<@1)
+    .if @1 > 7
+        .error "Bit number must be 0-7"
+    .endif
+    cbr  @0, (1<<@1)
 .endm
 
 
@@ -929,13 +929,13 @@ sRpnT3:
 ; Working storage for conversion to decimal form for display
 sDisplayNbrStr:
 sLeadingSpaces:
-    .byte 2             ; 2 leading blank spaces
+    .byte 2                                     ; 2 leading blank spaces
 sAsciiNumberStr:
-    .byte 1             ; Used for minus sign (if needed)
+    .byte 1                                     ; Used for minus sign (if needed)
 sBcdNumberArray:
     .byte 10
 sTrailingSpaces:
-    .byte 2             ; 2 trailing blank spaces
+    .byte 2                                     ; 2 trailing blank spaces
 
 
 
@@ -957,57 +957,57 @@ sTrailingSpaces:
 ; ************************************
 
 .org 0x00
-	rjmp main                  ; Reset vector
+    rjmp main                                   ; Reset vector
 .org 0x02
-	reti                       ; INT0
+    reti                                        ; INT0
 .org 0x04
-	reti                       ; INT1
+    reti                                        ; INT1
 .org 0x06
-	reti                       ; PCI0
+    reti                                        ; PCI0
 .org 0x08
-	reti                       ; PCI1
+    reti                                        ; PCI1
 .org 0x0A
-	reti                       ; PCI2
+    reti                                        ; PCI2
 .org 0x0C
-	reti                       ; WDT
+    reti                                        ; WDT
 .org 0x0E
-	reti                       ; OC2A
+    reti                                        ; OC2A
 .org 0x10
-	reti                       ; OC2B
+    reti                                        ; OC2B
 .org 0x12
-	reti                       ; OVF2
+    reti                                        ; OVF2
 .org 0x14
-	reti                       ; ICP1
+    reti                                        ; ICP1
 .org 0x16
-	rjmp hdlrTIM1_COMPA        ; OC1A
+    rjmp hdlrTIM1_COMPA                         ; OC1A
 .org 0x18
-	reti                       ; OC1B
+    reti                                        ; OC1B
 .org 0x1A
-	reti                       ; OVF1
+    reti                                        ; OVF1
 .org 0x1C
-	reti                       ; OC0A
+    reti                                        ; OC0A
 .org 0x1E
-	reti                       ; OC0B
+    reti                                        ; OC0B
 .org 0x20
-	reti                       ; OVF0
+    reti                                        ; OVF0
 .org 0x22
-	reti                       ; SPI
+    reti                                        ; SPI
 .org 0x24
-	reti                       ; URXC
+    reti                                        ; URXC
 .org 0x26
-	reti                       ; UDRE
+    reti                                        ; UDRE
 .org 0x28
-	reti                       ; UTXC
+    reti                                        ; UTXC
 .org 0x2A
-	reti                       ; ADCC
+    reti                                        ; ADCC
 .org 0x2C
-	reti                       ; ERDY
+    reti                                        ; ERDY
 .org 0x2E
-	reti                       ; ACI
+    reti                                        ; ACI
 .org 0x30
-	reti                       ; TWI
+    reti                                        ; TWI
 .org 0x32
-	reti                       ; SPMR
+    reti                                        ; SPMR
 .org 0x34
 
 
@@ -1560,15 +1560,15 @@ clearRpnStack_Loop:
 
 liftRpnStack:
 
-; Lift RPN stack up
+    ; Lift RPN stack up
 
-; sRpnX -> sRpnY -> sRpnZ -> sRpnT -> <discard>
-; sRpnX unchanged
+    ; sRpnX -> sRpnY -> sRpnZ -> sRpnT -> <discard>
+    ; sRpnX unchanged
 
-;   X                       = used as source ptr
-;   Z                       = used as destination ptr
-;   rTmp1                   = used
-;   rLoop1                  = used
+    ;   X                       = used as source ptr
+    ;   Z                       = used as destination ptr
+    ;   rTmp1                   = used
+    ;   rLoop1                  = used
 
     ; Z -> T
     ldiw X, sRpnZ
@@ -1613,14 +1613,14 @@ liftRpnStack_X2Y:
 
 dropRpnStack:
 
-; Drop RPN stack down
+    ; Drop RPN stack down
 
-; sRpnT -> sRpnZ -> sRpnY -> sRpnX -> <discard>
-; sRpnT unchanged
+    ; sRpnT -> sRpnZ -> sRpnY -> sRpnX -> <discard>
+    ; sRpnT unchanged
 
-;   X                       = used as source ptr
-;   Z                       = used as destination ptr
-;   rTmp1                   = used
+    ;   X                       = used as source ptr
+    ;   Z                       = used as destination ptr
+    ;   rTmp1                   = used
 
     ; Y -> X
     ldiw X, sRpnY
@@ -1675,20 +1675,20 @@ dropRpnStack_T2Z:
 
 addRpnXandY:
 
-; Add two signed DWORD numbers from RPN X and Y in the RPN stack
+    ; Add two signed DWORD numbers from RPN X and Y in the RPN stack
 
-; Registers rScratch3:rScratch0 and rArgByte3:rArgByte0 used as summands and
-; result is stored in rArgByte3:rArgByte0.
+    ; Registers rScratch3:rScratch0 and rArgByte3:rArgByte0 used as summands and
+    ; result is stored in rArgByte3:rArgByte0.
 
-; If no overflow, T flag is clear and product stored in RPN X
-; If overflow, T flag is set and rState kOverflowSignBit indicates a negative overflow if set
-; In all cases, stack is dropped
+    ; If no overflow, T flag is clear and product stored in RPN X
+    ; If overflow, T flag is set and rState kOverflowSignBit indicates a negative overflow if set
+    ; In all cases, stack is dropped
 
-;   rNbrByte3:rNbrByte0     = used
-;   rArgByte3:rArgByte0     = used
-;   rTmp1                   = used
-;   T flag                  = used (set = overflow; clear = no overflow)
-;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
+    ;   rNbrByte3:rNbrByte0     = used
+    ;   rArgByte3:rArgByte0     = used
+    ;   rTmp1                   = used
+    ;   T flag                  = used (set = overflow; clear = no overflow)
+    ;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
 
     clt                                         ; Clear T flag (no overflow)
     cbr rState, kOverflowSignBit                ; Clear the overflow sign bit (presume positive product)
@@ -1704,7 +1704,7 @@ addRpnXandY:
     adc rArgByte2, rScratch2
     adc rArgByte3, rScratch3
 
-    brvs addRpnXandY_Overflow                     ; Check for overflow
+    brvs addRpnXandY_Overflow                   ; Check for overflow
 
     moveArgByteToRpnX
     ret
@@ -1723,20 +1723,20 @@ addRpnXandY_Overflow:
 
 subtractRpnXfromY:
 
-; Subtract two signed DWORD numbers, RPN Y - RPN X taken from the RPN stack
+    ; Subtract two signed DWORD numbers, RPN Y - RPN X taken from the RPN stack
 
-; Registers rScratch3:rScratch0 and rArgByte3:rArgByte0 used as arguments and
-; result is stored in rArgByte3:rArgByte0.
+    ; Registers rScratch3:rScratch0 and rArgByte3:rArgByte0 used as arguments and
+    ; result is stored in rArgByte3:rArgByte0.
 
-; If no overflow, T flag is clear and product stored in RPN X
-; If overflow, T flag is set and rState kOverflowSignBit indicates a negative overflow if set
-; In all cases, stack is dropped
+    ; If no overflow, T flag is clear and product stored in RPN X
+    ; If overflow, T flag is set and rState kOverflowSignBit indicates a negative overflow if set
+    ; In all cases, stack is dropped
 
-;   rNbrByte3:rNbrByte0     = used
-;   rArgByte3:rArgByte0     = used
-;   rTmp1                   = used
-;   T flag                  = used (set = overflow; clear = no overflow)
-;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
+    ;   rNbrByte3:rNbrByte0     = used
+    ;   rArgByte3:rArgByte0     = used
+    ;   rTmp1                   = used
+    ;   T flag                  = used (set = overflow; clear = no overflow)
+    ;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
 
     clt                                         ; Clear T flag (no overflow)
     cbr rState, kOverflowSignBit                ; Clear the overflow sign bit (presume positive product)
@@ -1774,23 +1774,23 @@ subtractRpnXfromY_Overflow:
 
 multiplyRpnXandY:
 
-; Multiply two signed DWORD numbers from RPN X and Y in the RPN stack
+    ; Multiply two signed DWORD numbers from RPN X and Y in the RPN stack
 
-; Registers rNbrByte3:rNbrByte0 and rArgByte3:rArgByte0 used as multiplicands and
-; results is temporarily stored in rProd7:rProd0.
+    ; Registers rNbrByte3:rNbrByte0 and rArgByte3:rArgByte0 used as multiplicands and
+    ; results is temporarily stored in rProd7:rProd0.
 
-; If no overflow, T flag is clear and product stored in RPN X
-; If overflow, T flag is set and rState kOverflowSignBit indicates a negative product if set
-; In all cases, stack is dropped
+    ; If no overflow, T flag is clear and product stored in RPN X
+    ; If overflow, T flag is set and rState kOverflowSignBit indicates a negative product if set
+    ; In all cases, stack is dropped
 
-;   rNbrByte3:rNbrByte0     = used
-;   rArgByte3:rArgByte0     = used
-;   rProd7:rProd0           = used
-;   r1:r0                   = used (mul instruction outputs to r1:r0)
-;   rTmp1                   = used
-;   rZero                   = used (to store 0)
-;   T flag                  = used (set = overflow; clear = no overflow)
-;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
+    ;   rNbrByte3:rNbrByte0     = used
+    ;   rArgByte3:rArgByte0     = used
+    ;   rProd7:rProd0           = used
+    ;   r1:r0                   = used (mul instruction outputs to r1:r0)
+    ;   rTmp1                   = used
+    ;   rZero                   = used (to store 0)
+    ;   T flag                  = used (set = overflow; clear = no overflow)
+    ;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
 
     clt                                         ; Clear T flag (no overflow)
     cbr rState, kOverflowSignBit                ; Clear the overflow sign bit (presume positive product)
@@ -1952,21 +1952,21 @@ multiplyRpnXandY_Overflow:
 
 divideRpnYbyX:
 
-; Divide two signed DWORD numbers; RPN Y divided by RPN X from the RPN stack
+    ; Divide two signed DWORD numbers; RPN Y divided by RPN X from the RPN stack
 
-; Registers rNbrByte3:rNbrByte0 and rArgByte3:rArgByte0 used as divisor and dividend, resp.
-; Qoutient is computed in rArgByte3:rArgByte0 and remainder in rRem3:rRem0
+    ; Registers rNbrByte3:rNbrByte0 and rArgByte3:rArgByte0 used as divisor and dividend, resp.
+    ; Qoutient is computed in rArgByte3:rArgByte0 and remainder in rRem3:rRem0
 
-; If no overflow, T flag is clear and quotient stored in RPN X
-; If overflow, T flag is set and rState kOverflowSignBit indicates a negative product if set
-; In all cases, stack is dropped
+    ; If no overflow, T flag is clear and quotient stored in RPN X
+    ; If overflow, T flag is set and rState kOverflowSignBit indicates a negative product if set
+    ; In all cases, stack is dropped
 
-;   rNbrByte3:rNbrByte0     = used (divisor, denominator)
-;   rArgByte3:rArgByte0     = used (dividend, numerator) and (quotient)
-;   rRem3:rRem0             = used (remainder)
-;   rTmp1                   = used
-;   T flag                  = used (set = overflow; clear = no overflow)
-;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
+    ;   rNbrByte3:rNbrByte0     = used (divisor, denominator)
+    ;   rArgByte3:rArgByte0     = used (dividend, numerator) and (quotient)
+    ;   rRem3:rRem0             = used (remainder)
+    ;   rTmp1                   = used
+    ;   T flag                  = used (set = overflow; clear = no overflow)
+    ;   rState                  = overflow sign bit used (set = negative overflow, clear = positive overflow)
 
     clt                                         ; Clear T flag (no overflow)
     cbr rState, kOverflowSignBit                ; Clear the overflow sign bit (presume positive product)
@@ -2008,35 +2008,35 @@ divideRpnYbyX_YisPositive:
     clr rRem2
     sub rRem3, rRem3                            ; Clear both MSB and the carry
 
-    ldi	rTmp1, 33                               ; Init loop counter
+    ldi rTmp1, 33                               ; Init loop counter
 
 divideRpnYbyX_Loop:
-    rol	rArgByte0                               ; Shift dividend left
-    rol	rArgByte1
-    rol	rArgByte2
-    rol	rArgByte3
-    dec	rTmp1                                   ; Decrement loop counter
+    rol rArgByte0                               ; Shift dividend left
+    rol rArgByte1
+    rol rArgByte2
+    rol rArgByte3
+    dec rTmp1                                   ; Decrement loop counter
     breq divideRpnYbyX_Done                     ; If counter == 0, done
 
-    rol	rRem0                                   ; Shift dividend into remainder
-    rol	rRem1
-    rol	rRem2
-    rol	rRem3
-    sub	rRem0, rNbrByte0                        ; Remainder = Remainder - Divisor
-    sbc	rRem1, rNbrByte1
-    sbc	rRem2, rNbrByte2
-    sbc	rRem3, rNbrByte3
+    rol rRem0                                   ; Shift dividend into remainder
+    rol rRem1
+    rol rRem2
+    rol rRem3
+    sub rRem0, rNbrByte0                        ; Remainder = Remainder - Divisor
+    sbc rRem1, rNbrByte1
+    sbc rRem2, rNbrByte2
+    sbc rRem3, rNbrByte3
     brcs divideRpnYbyX_RemNegative              ; Branch if result negative
 
     sec                                         ; Set carry to be shifted into result
-	rjmp divideRpnYbyX_Loop
+    rjmp divideRpnYbyX_Loop
 
 divideRpnYbyX_RemNegative:
-    add	rRem0, rNbrByte0                        ; Negative, so restore remainder
-    adc	rRem1, rNbrByte1
-    adc	rRem2, rNbrByte2
-    adc	rRem3, rNbrByte3
-    clc	                                        ; Clear carry that would otherwise be shifted into result
+    add rRem0, rNbrByte0                        ; Negative, so restore remainder
+    adc rRem1, rNbrByte1
+    adc rRem2, rNbrByte2
+    adc rRem3, rNbrByte3
+    clc                                         ; Clear carry that would otherwise be shifted into result
     rjmp divideRpnYbyX_Loop
 
 divideRpnYbyX_Done:
@@ -2143,13 +2143,13 @@ multiplyNbrByteBy10_Overflow:
 
 doDword2sComplement:
 
-; Convert a DWORD (32-bits, signed) to its 2s complement
-; (Do 1s complement and add 1)
+    ; Convert a DWORD (32-bits, signed) to its 2s complement
+    ; (Do 1s complement and add 1)
 
-; Registers rArgByte3:rArgByte0 passed in as arguments
-; Results returned in rArgByte3:rArgByte0 (conversion done in place)
+    ; Registers rArgByte3:rArgByte0 passed in as arguments
+    ; Results returned in rArgByte3:rArgByte0 (conversion done in place)
 
-; rArgByte3:rArgByte0   = 32-bit quantity to convert (conversion done in place)
+    ; rArgByte3:rArgByte0   = 32-bit quantity to convert (conversion done in place)
 
     com rArgByte3
     com rArgByte2
@@ -2179,7 +2179,7 @@ convertDwordToAscStr:
     ; rScratch03:rScratch0  = working register (not changed)
     ; Z                     = working register (changed)
 
-    push rArgByte0                      ; Save the number
+    push rArgByte0                          ; Save the number
     push rArgByte1
     push rArgByte2
     push rArgByte3
@@ -2190,51 +2190,51 @@ convertDwordToAscStr:
     push rScratch3
 
     ldiw Z, sAsciiNumberStr
-    ldi rTmp1, ' '                      ; Put a space in the leading spot
-    st Z+, rTmp1                        ; (will be overwritten with a '-' if needed)
-                                        ; Z now points to sBcdNumberArray
-    clr rTmp2                           ; rTmp2 is a flag for negative numbers
-    sbrs rArgByte3, kSignBitNbr         ; Check for negative number
-    rjmp convertDwordToAscStr_0         ; If not negative, go right to conversion
-    sbr rTmp2, 0x01                     ; Set flag for negative number
-    rcall doDword2sComplement           ; Convert to the corresponding unsigned number
+    ldi rTmp1, ' '                          ; Put a space in the leading spot
+    st Z+, rTmp1                            ; (will be overwritten with a '-' if needed)
+                                            ; Z now points to sBcdNumberArray
+    clr rTmp2                               ; rTmp2 is a flag for negative numbers
+    sbrs rArgByte3, kSignBitNbr             ; Check for negative number
+    rjmp convertDwordToAscStr_0             ; If not negative, go right to conversion
+    sbr rTmp2, 0x01                         ; Set flag for negative number
+    rcall doDword2sComplement               ; Convert to the corresponding unsigned number
 
 convertDwordToAscStr_0:
-    rcall convertDwordToBcdArray        ; Convert binary DWORD to BCD
-	ldi rTmp1, 9
-    mov rScratch0, rTmp1                ; Counter, rScratch0, is set to 9 for skip zeros loop
+    rcall convertDwordToBcdArray            ; Convert binary DWORD to BCD
+    ldi rTmp1, 9
+    mov rScratch0, rTmp1                    ; Counter, rScratch0, is set to 9 for skip zeros loop
 
-convertDwordToAscStr_1:                 ; This loop is to skip leading zeros....
-    ld rTmp1, Z                         ; Read a BCD digit
-    tst rTmp1                           ; Check if leading zero
-    brne convertDwordToAscStr_2         ; No, we found non-zero digit
-    ldi rTmp1, ' '                      ; Overwrite the 0 with a blank
-    st Z+, rTmp1                        ; Store and advance Z to next position
-    dec rScratch0                       ; Decrement counter of how many BCD digits we processed
-    brne convertDwordToAscStr_1         ; Branch if more BCD digits to read (this loop counts down from 9)
-    ld rTmp1, Z                         ; If get here, read the last BCD digit and then convert to ASCII, even if 0
+convertDwordToAscStr_1:                     ; This loop is to skip leading zeros....
+    ld rTmp1, Z                             ; Read a BCD digit
+    tst rTmp1                               ; Check if leading zero
+    brne convertDwordToAscStr_2             ; No, we found non-zero digit
+    ldi rTmp1, ' '                          ; Overwrite the 0 with a blank
+    st Z+, rTmp1                            ; Store and advance Z to next position
+    dec rScratch0                           ; Decrement counter of how many BCD digits we processed
+    brne convertDwordToAscStr_1             ; Branch if more BCD digits to read (this loop counts down from 9)
+    ld rTmp1, Z                             ; If get here, read the last BCD digit and then convert to ASCII, even if 0
 
-convertDwordToAscStr_2:                 ; This segment deals with the first non-zero (or last) BCD digit...
-	inc rScratch0                       ; Add 1 because (non-zero BCD)->ASCII loop below counts "from 10"
-    sbrs rTmp2, 0                       ; Check for negative number
-    rjmp convertDwordToAscStr_3         ; Not negative so jmp directly to conversion to ASCII
-    ldi rTmp2, '-'                      ; Get here, so we have a negative number
-    st -Z, rTmp2                        ; Back up one and store a minus sign
-    st Z+, rTmp2                        ; Do it again but advance Z to restore the Z position
+convertDwordToAscStr_2:                     ; This segment deals with the first non-zero (or last) BCD digit...
+    inc rScratch0                           ; Add 1 because (non-zero BCD)->ASCII loop below counts "from 10"
+    sbrs rTmp2, 0                           ; Check for negative number
+    rjmp convertDwordToAscStr_3             ; Not negative so jmp directly to conversion to ASCII
+    ldi rTmp2, '-'                          ; Get here, so we have a negative number
+    st -Z, rTmp2                            ; Back up one and store a minus sign
+    st Z+, rTmp2                            ; Do it again but advance Z to restore the Z position
 
-convertDwordToAscStr_3:                 ; This loop converts non-zero BCD digits to ASCII...
-    subi rTmp1, -'0'                    ; Add '0' to get ASCII version of number
-    st Z+, rTmp1                        ; Store the ASCII digit and advance Z
-    ld rTmp1, Z                         ; Read next BCD digit
-    dec rScratch0                       ; Still more BCD digits to go?
-    brne convertDwordToAscStr_3         ; Yes, go to top of this loop
+convertDwordToAscStr_3:                     ; This loop converts non-zero BCD digits to ASCII...
+    subi rTmp1, -'0'                        ; Add '0' to get ASCII version of number
+    st Z+, rTmp1                            ; Store the ASCII digit and advance Z
+    ld rTmp1, Z                             ; Read next BCD digit
+    dec rScratch0                           ; Still more BCD digits to go?
+    brne convertDwordToAscStr_3             ; Yes, go to top of this loop
 
-    pop rScratch3                       ; Restore rScratch
+    pop rScratch3                           ; Restore rScratch
     pop rScratch2
     pop rScratch1
     pop rScratch0
 
-    pop rArgByte3                       ; Restore rArgByte
+    pop rArgByte3                           ; Restore rArgByte
     pop rArgByte2
     pop rArgByte1
     pop rArgByte0
@@ -2259,9 +2259,9 @@ convertDwordToBcdArray:
     ;                         (1 digit per byte, 10 bytes total, with leading zeros)
     ; rScratch3:rScratch0   = scratch registers used as a 32-bit divisor (changed)
 
-    pushw Z                             ; Save Z
+    pushw Z                                     ; Save Z
 
-    ldi rTmp1, Byte4( kDecimal_1e9 )    ; Start by multiples of 1,000,000,000
+    ldi rTmp1, Byte4( kDecimal_1e9 )            ; Start by multiples of 1,000,000,000
     mov rScratch3, rTmp1
     ldi rTmp1, Byte3( kDecimal_1e9 )
     mov rScratch2, rTmp1
@@ -2271,7 +2271,7 @@ convertDwordToBcdArray:
     mov rScratch0, rTmp1
     rcall getOneDecimalDigit
 
-    ldi rTmp1, Byte4( kDecimal_1e8 )    ; Next multiples of 100,000,000
+    ldi rTmp1, Byte4( kDecimal_1e8 )            ; Next multiples of 100,000,000
     mov rScratch3, rTmp1
     ldi rTmp1, Byte3( kDecimal_1e8 )
     mov rScratch2, rTmp1
@@ -2281,7 +2281,7 @@ convertDwordToBcdArray:
     mov rScratch0, rTmp1
     rcall getOneDecimalDigit
 
-    ldi rTmp1, Byte4( kDecimal_1e7 )    ; Next multiples of 10,000,000
+    ldi rTmp1, Byte4( kDecimal_1e7 )            ; Next multiples of 10,000,000
     mov rScratch3, rTmp1
     ldi rTmp1, Byte3( kDecimal_1e7 )
     mov rScratch2, rTmp1
@@ -2291,7 +2291,7 @@ convertDwordToBcdArray:
     mov rScratch0, rTmp1
     rcall getOneDecimalDigit
 
-    ldi rTmp1, Byte4( kDecimal_1e6 )    ; Next multiples of 1,000,000
+    ldi rTmp1, Byte4( kDecimal_1e6 )            ; Next multiples of 1,000,000
     mov rScratch3, rTmp1
     ldi rTmp1, Byte3( kDecimal_1e6 )
     mov rScratch2, rTmp1
@@ -2301,7 +2301,7 @@ convertDwordToBcdArray:
     mov rScratch0, rTmp1
     rcall getOneDecimalDigit
 
-    ldi rTmp1, Byte4( kDecimal_1e5 )    ; Next multiples of 100,000
+    ldi rTmp1, Byte4( kDecimal_1e5 )            ; Next multiples of 100,000
     mov rScratch3, rTmp1
     ldi rTmp1, Byte3( kDecimal_1e5 )
     mov rScratch2, rTmp1
@@ -2311,7 +2311,7 @@ convertDwordToBcdArray:
     mov rScratch0, rTmp1
     rcall getOneDecimalDigit
 
-    ldi rTmp1, Byte4( kDecimal_1e4 )    ; Next multiples of 10,000
+    ldi rTmp1, Byte4( kDecimal_1e4 )            ; Next multiples of 10,000
     mov rScratch3, rTmp1
     ldi rTmp1, Byte3( kDecimal_1e4 )
     mov rScratch2, rTmp1
@@ -2321,7 +2321,7 @@ convertDwordToBcdArray:
     mov rScratch0, rTmp1
     rcall getOneDecimalDigit
 
-    ldi rTmp1, Byte4( kDecimal_1e3 )    ; Next multiples of 1,000
+    ldi rTmp1, Byte4( kDecimal_1e3 )            ; Next multiples of 1,000
     mov rScratch3, rTmp1
     ldi rTmp1, Byte3( kDecimal_1e3 )
     mov rScratch2, rTmp1
@@ -2331,7 +2331,7 @@ convertDwordToBcdArray:
     mov rScratch0, rTmp1
     rcall getOneDecimalDigit
 
-    ldi rTmp1, Byte4( kDecimal_1e2 )    ; Next multiples of 100
+    ldi rTmp1, Byte4( kDecimal_1e2 )            ; Next multiples of 100
     mov rScratch3, rTmp1
     ldi rTmp1, Byte3( kDecimal_1e2 )
     mov rScratch2, rTmp1
@@ -2341,7 +2341,7 @@ convertDwordToBcdArray:
     mov rScratch0, rTmp1
     rcall getOneDecimalDigit
 
-    ldi rTmp1, Byte4( kDecimal_1e1 )    ; Next multiples of 10
+    ldi rTmp1, Byte4( kDecimal_1e1 )            ; Next multiples of 10
     mov rScratch3, rTmp1
     ldi rTmp1, Byte3( kDecimal_1e1 )
     mov rScratch2, rTmp1
@@ -2351,9 +2351,9 @@ convertDwordToBcdArray:
     mov rScratch0, rTmp1
     rcall getOneDecimalDigit
 
-    st Z, rArgByte0                     ; Remainder is just the ones
+    st Z, rArgByte0                             ; Remainder is just the ones
 
-    popw Z                              ; Restore Z
+    popw Z                                      ; Restore Z
 
     ret
 
@@ -2375,33 +2375,33 @@ getOneDecimalDigit:
     ; rScratch3:rScratch0   = 32-bit binary decimal divisor (unchanged)
     ; rTmp1                 = Used
 
-    clr rTmp1                           ; Counts number of multiples subtracted, initialize to 0
+    clr rTmp1                                   ; Counts number of multiples subtracted, initialize to 0
 
 getOneDecimalDigit_1:
-    cp rArgByte3, rScratch3             ; Compare Byte3 to decimal byte
-    brcs getOneDecimalDigit_3           ; Byte3 smaller than decimal byte -> done (digit = 0)
-    brne getOneDecimalDigit_2           ; Byte3 bigger than decimal byte -> subtract
-    cp rArgByte2, rScratch2             ; Byte3 equal, so compare Byte2
-    brcs getOneDecimalDigit_3           ; Byte2 smaller than decimal -> done (digit = 0)
-    brne getOneDecimalDigit_2           ; Byte2 bigger than decimal byte -> subtract
-    cp rArgByte1, rScratch1             ; Byte2 equal, so compate Byte1
-    brcs getOneDecimalDigit_3           ; Byte1 smaller than decimal -> done (digit = 0)
-    brne getOneDecimalDigit_2           ; Byte1 bigger than decimal byte -> subtract
-    cp rArgByte0, rScratch0             ; Byte1 equal so compare Byte0
-    brcs getOneDecimalDigit_3           ; Byte0 smaller than decimal -> done (digit = 0)
+    cp rArgByte3, rScratch3                     ; Compare Byte3 to decimal byte
+    brcs getOneDecimalDigit_3                   ; Byte3 smaller than decimal byte -> done (digit = 0)
+    brne getOneDecimalDigit_2                   ; Byte3 bigger than decimal byte -> subtract
+    cp rArgByte2, rScratch2                     ; Byte3 equal, so compare Byte2
+    brcs getOneDecimalDigit_3                   ; Byte2 smaller than decimal -> done (digit = 0)
+    brne getOneDecimalDigit_2                   ; Byte2 bigger than decimal byte -> subtract
+    cp rArgByte1, rScratch1                     ; Byte2 equal, so compate Byte1
+    brcs getOneDecimalDigit_3                   ; Byte1 smaller than decimal -> done (digit = 0)
+    brne getOneDecimalDigit_2                   ; Byte1 bigger than decimal byte -> subtract
+    cp rArgByte0, rScratch0                     ; Byte1 equal so compare Byte0
+    brcs getOneDecimalDigit_3                   ; Byte0 smaller than decimal -> done (digit = 0)
 
 getOneDecimalDigit_2:
-    sub rArgByte0, rScratch0            ; Subtract the decimal value from the number
+    sub rArgByte0, rScratch0                    ; Subtract the decimal value from the number
     sbc rArgByte1, rScratch1
     sbc rArgByte2, rScratch2
     sbc rArgByte3, rScratch3
-    inc rTmp1                           ; Increment digit count
-    rjmp getOneDecimalDigit_1           ; Next loop back to try to subtract again
+    inc rTmp1                                   ; Increment digit count
+    rjmp getOneDecimalDigit_1                   ; Next loop back to try to subtract again
 
 getOneDecimalDigit_3:
-    st Z+, rTmp1                        ; Count of multiples subtracted is the digit, save and increment Z
+    st Z+, rTmp1                                ; Count of multiples subtracted is the digit, save and increment Z
 
-	ret
+    ret
 
 
 
@@ -2578,14 +2578,12 @@ initializeTimer:
     sts TCCR1B, rTmp1;
 
     ; Load the CompA "top" counter value, 16-bit value must be loaded high-byte first
-
     ldi rTmp1, High( kTimer1At1Hz )             ; Always load high byte first
     sts OCR1AH, rTmp1;
     ldi rTmp1, Low( kTimer1At1Hz )              ; And load low byte second
     sts OCR1AL, rTmp1;
 
     ; Enable the CompA interrupt for Timer1
-
     ldi rTmp1, ( 1 << OCIE1A )                  ; Enable Compare A interrupt
     sts TIMSK1, rTmp1;
 
@@ -3152,33 +3150,33 @@ delayMicroSeconds:
     ; a check to see if we are done (i.e., the request was a 1us delay).
     ; Then do a loop that burns 16 cycles each time
 
-    nop                                 ; 1 cycle
-    nop                                 ; 1 cycle
-    nop                                 ; 1 cycle
-    nop                                 ; 1 cycle
-    sbiw rDelayUsH:rDelayUsL, 1         ; 2 cycles
-    breq delayMicroseconds_Ret          ; 1 cycle if false/continue, 2 cycles (8 total) if true/branch
-    nop                                 ; 1 cycle (8 total)
+    nop                                         ; 1 cycle
+    nop                                         ; 1 cycle
+    nop                                         ; 1 cycle
+    nop                                         ; 1 cycle
+    sbiw rDelayUsH:rDelayUsL, 1                 ; 2 cycles
+    breq delayMicroseconds_Ret                  ; 1 cycle if false/continue, 2 cycles (8 total) if true/branch
+    nop                                         ; 1 cycle (8 total)
 
     delayMicroseconds_Loop:
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
+        nop                                     ; 1 cycle
+        nop                                     ; 1 cycle
+        nop                                     ; 1 cycle
+        nop                                     ; 1 cycle
 
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
+        nop                                     ; 1 cycle
+        nop                                     ; 1 cycle
+        nop                                     ; 1 cycle
+        nop                                     ; 1 cycle
 
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
-        nop                             ; 1 cycle
+        nop                                     ; 1 cycle
+        nop                                     ; 1 cycle
+        nop                                     ; 1 cycle
+        nop                                     ; 1 cycle
 
-        sbiw rDelayUsH:rDelayUsL, 1     ; 2 cycles
-        brne delayMicroseconds_Loop     ; 2 cycles (16 total) on true/loop, 1 cycle on false/exit_loop
-    nop                                 ; 1 cycle (so total 16 on exit from last loop)
+        sbiw rDelayUsH:rDelayUsL, 1             ; 2 cycles
+        brne delayMicroseconds_Loop             ; 2 cycles (16 total) on true/loop, 1 cycle on false/exit_loop
+    nop                                         ; 1 cycle (so total 16 on exit from last loop)
 
 delayMicroseconds_Ret:
     ret

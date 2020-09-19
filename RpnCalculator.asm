@@ -43,31 +43,31 @@
 ; 1: Reset
 ; 2: PD0 RXD0 PCINT16
 ; 3: PD1 TXD0 PCINT17
-; 4: PD2 INT0 PCINT18
-; 5: PD3 INT1 OC2B PCINT19
-; 6: PD4 T0 XCK0 PCINT20
+; 4: PD2 INT0 PCINT18                           --> Red LED
+; 5: PD3 INT1 OC2B PCINT19                      --> Green LED
+; 6: PD4 T0 XCK0 PCINT20                        --> Keypad Column 4
 ; 7: Vcc
 ; 8: Gnd
-; 9: PB6 TOSC1 XTAL1 PCINT6
-; 10: PB7 TOSC2 XTAL2 PCINT7
-; 11: PD5 T1 OC0B PCINT21
-; 12: PD6 AIN0 OC0A PCINT22
-; 13: PD7 AIN1 PCINT23
-; 14: PB0 ICP1 CLKO PCINT0
-; 15: PB1 OC1A PCINT1
-; 16: PB2 /SS OC1B PCINT2
-; 17: PB3 MOSI OC2A PCINT3
+; 9: PB6 TOSC1 XTAL1 PCINT6                     --> 16 MHz Oscillator
+; 10: PB7 TOSC2 XTAL2 PCINT7                    --> 16 MHz Oscillator
+; 11: PD5 T1 OC0B PCINT21                       --> Keypad Column 3
+; 12: PD6 AIN0 OC0A PCINT22                     --> Keypad Column 2
+; 13: PD7 AIN1 PCINT23                          --> Keypad Column 1
+; 14: PB0 ICP1 CLKO PCINT0                      --> Keypad Row 4
+; 15: PB1 OC1A PCINT1                           --> Keypad Row 3
+; 16: PB2 SS OC1B PCINT2                        --> Keypad Row 2
+; 17: PB3 MOSI OC2A PCINT3                      --> Keypad Row 1
 ; 18: PB4 MISO PCINT4
 ; 19: PB5 USCK PCINT5
 ; 20: AVCC
 ; 21: AREF
 ; 22: Gnd
-; 23: PC0 ADC0 PCINT8
-; 24: PC1 ADC1 PCINT9
-; 25: PC2 ADC2 PCINT10
-; 26: PC3 ADC3 PCINT11
-; 27: PC4 ADC4 SDA PCINT12
-; 28: PC5 ADC5 SCL PCINT13;
+; 23: PC0 ADC0 PCINT8                           --> LCD Pin D4 (Data)
+; 24: PC1 ADC1 PCINT9                           --> LCD Pin D5 (Data)
+; 25: PC2 ADC2 PCINT10                          --> LCD Pin D6 (Data)
+; 26: PC3 ADC3 PCINT11                          --> LCD Pin D7 (Data)
+; 27: PC4 ADC4 SDA PCINT12                      --> LCD Pin E (Enable)
+; 28: PC5 ADC5 SCL PCINT13                      --> LCD Pin RS (Data/Cmd Select)
 
 
 

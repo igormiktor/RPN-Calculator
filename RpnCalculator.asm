@@ -46,8 +46,8 @@
 ; 4: PD2 INT0 PCINT18                           --> Red LED
 ; 5: PD3 INT1 OC2B PCINT19                      --> Green LED
 ; 6: PD4 T0 XCK0 PCINT20                        --> Keypad Column 4
-; 7: Vcc
-; 8: Gnd
+; 7: Vcc                                        --> +5V
+; 8: Gnd                                        --> Ground
 ; 9: PB6 TOSC1 XTAL1 PCINT6                     --> 16 MHz Oscillator
 ; 10: PB7 TOSC2 XTAL2 PCINT7                    --> 16 MHz Oscillator
 ; 11: PD5 T1 OC0B PCINT21                       --> Keypad Column 3
@@ -59,9 +59,9 @@
 ; 17: PB3 MOSI OC2A PCINT3                      --> Keypad Row 1
 ; 18: PB4 MISO PCINT4
 ; 19: PB5 USCK PCINT5
-; 20: AVCC
-; 21: AREF
-; 22: Gnd
+; 20: AVCC                                      --> +5V
+; 21: AREF                                      --> +5V
+; 22: Gnd                                       --> Ground
 ; 23: PC0 ADC0 PCINT8                           --> LCD Pin D4 (Data)
 ; 24: PC1 ADC1 PCINT9                           --> LCD Pin D5 (Data)
 ; 25: PC2 ADC2 PCINT10                          --> LCD Pin D6 (Data)

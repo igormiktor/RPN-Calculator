@@ -1,6 +1,6 @@
 ; ***********************************************************************************
 ;
-;    An RPN calculator an 4x4 KeyPad and an LCD display
+;    An RPN calculator made with a 4x4 KeyPad and an LCD display
 ;
 ;    The MIT License (MIT)
 ;

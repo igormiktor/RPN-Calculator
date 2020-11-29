@@ -1627,7 +1627,7 @@ dropRpnStack:
     ldiw Z, sRpnX
     ldi rTmp1, 4
     mov rLoop1, rTmp1
-    dropRpnStack_Y2X:
+dropRpnStack_Y2X:
     ld rTmp1, X+
     st Z+, rTmp1
     dec rLoop1

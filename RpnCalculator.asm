@@ -40,7 +40,7 @@
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ;
 ; ATmega328p Package = 28-pin-PDIP
-; 1: Reset
+; 1: Reset                                      --> Reset switch
 ; 2: PD0 RXD0 PCINT16
 ; 3: PD1 TXD0 PCINT17
 ; 4: PD2 INT0 PCINT18                           --> Red LED
@@ -66,7 +66,7 @@
 ; 24: PC1 ADC1 PCINT9                           --> LCD Pin D5 (Data)
 ; 25: PC2 ADC2 PCINT10                          --> LCD Pin D6 (Data)
 ; 26: PC3 ADC3 PCINT11                          --> LCD Pin D7 (Data)
-; 27: PC4 ADC4 SDA PCINT12                      --> LCD Pin E (Enable)
+; 27: PC4 ADC4 SDA PCINT12                      --> LCD Pin E  (Enable)
 ; 28: PC5 ADC5 SCL PCINT13                      --> LCD Pin RS (Data/Cmd Select)
 
 

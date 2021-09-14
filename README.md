@@ -30,7 +30,7 @@ Double-word (32-bit) signed
 arithmetic is implemented manually in assembler, as is conversion
 of 32-bit quantities to decimal ASCII strings for display.
 
-A Fritzing schematic is available in the Schematic folder, along with a PDF export.
+A schematic of the circuit and a Fritzing wiring diagram (both in PDF) are available in the Schematic folder, along with the Fritzing file.
 
 Various design notes appear in the Notes folder.
 

@@ -263,13 +263,13 @@
 .def rRem3                          = r5        ; Used to store quotient of DWORD division
 .def rDisplayTmp                    = r5        ; Used as temporary in low-level LCD related routines
 
-.def rScratch0                      = r6        ; Scratch (low) register
+.def rScratch0                      = r6        ; Scratch (lowest) register
 .def rProd4                         = r6        ; Used to store product of DWORD multiplication
 .def rScratch1                      = r7        ; Scratch (low) register
 .def rProd5                         = r7        ; Used to store product of DWORD multiplication
-.def rScratch2                      = r8        ; Scratch (low) register
+.def rScratch2                      = r8        ; Scratch (high) register
 .def rProd6                         = r8        ; Used to store product of DWORD multiplication
-.def rScratch3                      = r9        ; Scratch (low) register
+.def rScratch3                      = r9        ; Scratch (highest) register
 .def rProd7                         = r9        ; Used to store product of DWORD multiplication
 
 .def rNbrByte0                      = r10       ; Assemble a 16 bit number from keypad entry here
